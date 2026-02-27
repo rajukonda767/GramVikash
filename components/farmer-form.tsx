@@ -51,7 +51,14 @@ export function FarmerForm({ onSubmit }: Props) {
             >
               <option value="">{t.selectCrop}</option>
               <option value="paddy">{t.paddy}</option>
+              <option value="cotton">{t.cotton}</option>
+              <option value="chilli">{t.chilli}</option>
+              <option value="groundnut">{t.groundnut}</option>
+              <option value="sugarcane">{t.sugarcane}</option>
+              <option value="maize">{t.maize}</option>
               <option value="tomato">{t.tomato}</option>
+              <option value="turmeric">{t.turmeric}</option>
+              <option value="mango">{t.mango}</option>
             </select>
           </div>
 
