@@ -132,6 +132,11 @@ function speakWithTTSAPI(
 
   abortChain = false
 
+  const browserFallback = (chunk: string, andThen: () => void) => {
+    const fullLang = langCode === "te" ? "te-IN" : "en-IN"
+    speakWithBrowserTTS(chunk, fullLang, () => {}, andThen)
+  }
+
   const playNext = () => {
     if (abortChain || idx >= chunks.length) {
       onEnd()
@@ -144,31 +149,42 @@ function speakWithTTSAPI(
     const apiUrl = `/api/tts?text=${encodeURIComponent(chunk)}&lang=${langCode}`
     audio = new Audio(apiUrl)
     audio.crossOrigin = "anonymous"
+    audio.preload = "auto"
     currentAudio = audio
 
-    audio.onended = () => {
+    const advanceNext = () => {
       if (abortChain) { onEnd(); return }
       idx++
       playNext()
     }
+
+    audio.onended = advanceNext
+
     audio.onerror = () => {
-      // Strategy 2: Browser SpeechSynthesis fallback
-      const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-      speakWithBrowserTTS(chunk, fullLang, () => {}, () => {
-        if (abortChain) { onEnd(); return }
-        idx++
-        playNext()
+      browserFallback(chunk, advanceNext)
+    }
+
+    // Set a timeout: if audio doesn't load in 3s, fall back to browser TTS
+    const loadTimeout = setTimeout(() => {
+      if (audio && audio.readyState < 3) {
+        audio.oncanplaythrough = null
+        audio.onerror = null
+        audio.onended = null
+        browserFallback(chunk, advanceNext)
+      }
+    }, 3000)
+
+    // Wait for audio data to fully load before playing to avoid cutting the start
+    audio.oncanplaythrough = () => {
+      clearTimeout(loadTimeout)
+      if (abortChain) { onEnd(); return }
+      audio?.play().catch(() => {
+        browserFallback(chunk, advanceNext)
       })
     }
-    audio.play().catch(() => {
-      // If play rejected (autoplay policy), fall back to browser TTS
-      const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-      speakWithBrowserTTS(chunk, fullLang, () => {}, () => {
-        if (abortChain) { onEnd(); return }
-        idx++
-        playNext()
-      })
-    })
+
+    // Start loading
+    audio.load()
   }
 
   playNext()

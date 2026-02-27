@@ -68,6 +68,11 @@ function speakWithTTS(
   let currentIdx = 0
   let currentAudio: HTMLAudioElement | null = null
 
+  const browserFallback = (text: string, andThen: () => void) => {
+    const fullLang = langCode === "te" ? "te-IN" : "en-IN"
+    speakWithBrowserTTS(text, fullLang, () => {}, andThen)
+  }
+
   const playChunkWithFallbacks = () => {
     if (currentIdx >= chunks.length) {
       onEnd()
@@ -77,49 +82,43 @@ function speakWithTTS(
     const chunkText = chunks[currentIdx]
     if (currentIdx === 0) onStart()
 
-    // Strategy 1: Our own API route (server-side proxy, no CORS)
-    const apiUrl = `/api/tts?text=${encodeURIComponent(chunkText)}&lang=${langCode}`
-    const audio = new Audio(apiUrl)
-    currentAudio = audio
-
-    audio.onended = () => {
+    const advanceNext = () => {
       currentIdx++
       playChunkWithFallbacks()
     }
 
+    // Strategy 1: Our own API route (server-side proxy, no CORS)
+    const apiUrl = `/api/tts?text=${encodeURIComponent(chunkText)}&lang=${langCode}`
+    const audio = new Audio(apiUrl)
+    audio.preload = "auto"
+    currentAudio = audio
+
+    audio.onended = advanceNext
+
     audio.onerror = () => {
-      // Strategy 2: Direct Google TTS
-      const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunkText)}&tl=${langCode}&client=tw-ob`
-      const audio2 = new Audio(googleUrl)
-      currentAudio = audio2
+      browserFallback(chunkText, advanceNext)
+    }
 
-      audio2.onended = () => {
-        currentIdx++
-        playChunkWithFallbacks()
+    // Set a timeout: if audio doesn't load in 3s, fall back to browser TTS
+    const loadTimeout = setTimeout(() => {
+      if (audio && audio.readyState < 3) {
+        audio.oncanplaythrough = null
+        audio.onerror = null
+        audio.onended = null
+        browserFallback(chunkText, advanceNext)
       }
+    }, 3000)
 
-      audio2.onerror = () => {
-        // Strategy 3: Browser SpeechSynthesis
-        const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-        speakWithBrowserTTS(chunkText, fullLang, () => {}, () => {
-          currentIdx++
-          playChunkWithFallbacks()
-        })
-      }
-
-      audio2.play().catch(() => {
-        const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-        speakWithBrowserTTS(chunkText, fullLang, () => {}, () => {
-          currentIdx++
-          playChunkWithFallbacks()
-        })
+    // Wait for audio data to fully load before playing
+    audio.oncanplaythrough = () => {
+      clearTimeout(loadTimeout)
+      audio.play().catch(() => {
+        browserFallback(chunkText, advanceNext)
       })
     }
 
-    audio.play().catch(() => {
-      // If play() is rejected (autoplay policy), try Google direct
-      audio.onerror?.(new Event("error") as ErrorEvent)
-    })
+    // Start loading
+    audio.load()
   }
 
   playChunkWithFallbacks()
