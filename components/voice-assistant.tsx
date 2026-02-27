@@ -245,76 +245,110 @@ export function VoiceAssistant() {
       const original = transcript
       const has = (kw: string) => lower.includes(kw) || original.includes(kw)
 
-      // Detect intent: eligibility or apply
-      const isEligQ = [
-        "అర్హత", "eligib", "eligible", "criteria", "who can",
-        "ఎవరు", "ప్రమాణ", "qualify", "qualification"
-      ].some(has)
+      // Detect intent
+      const isEligQ = ["అర్హత", "eligib", "eligible", "criteria", "who can", "ఎవరు", "ప్రమాణ", "qualify"].some(has)
+      const isApplyQ = ["దరఖాస్తు", "apply", "how to", "ఎలా", "register", "నమోదు", "process", "ప్రక్రియ", "website", "online"].some(has)
 
-      const isApplyQ = [
-        "దరఖాస్తు", "apply", "how to", "ఎలా", "register",
-        "registration", "నమోదు", "process", "ప్రక్రియ", "website",
-        "వెబ్‌సైట్", "online", "ఆన్‌లైన్"
-      ].some(has)
+      // --- Central Schemes ---
+      const isPmKisan = ["పీఎం కిసాన్", "కిసాన్", "పి ఎం", "కిసాన", "పీఎం", "pm kisan", "kisan", "6000", "ఆరు వేల"].some(has)
+      const isFasal = ["ఫసల్ బీమా", "fasal bima", "crop insurance", "పంట బీమా", "pmfby", "బీమా"].some(has)
+      const isKCC = ["క్రెడిట్ కార్డ్", "credit card", "kcc", "కేసీసీ", "రుణం", "loan"].some(has)
+      const isPMKSY = ["సించాయ్", "sinchai", "irrigation", "నీటిపారుదల", "డ్రిప్", "drip", "sprinkler", "pmksy"].some(has)
 
-      // PM Kisan detection
-      const isPmKisan = [
-        "పీఎం కిసాన్", "కిసాన్", "పి ఎం", "కిసాన", "పీఎం",
-        "pm kisan", "kisan", "pm kisan scheme",
-        "6000", "ఆరు వేల", "six thousand"
-      ].some(has)
+      // --- AP State Schemes ---
+      const isRythu = ["రైతు భరోసా", "భరోసా", "వైఎస్ఆర్", "rythu bharosa", "bharosa", "ysr", "13500", "పదమూడు"].some(has)
+      const isAnnadatha = ["అన్నదాత", "annadatha", "సుఖీభవ", "sukhibhava", "ఉచిత బీమా", "free insurance"].some(has)
+      const isMicroIrr = ["మైక్రో ఇరిగేషన్", "micro irrigation", "90%", "80%", "ap subsidy", "ap drip"].some(has)
+      const isVasathi = ["వసతి దీవెన", "vasathi", "deevena", "జగనన్న", "jagananna", "విద్య", "education", "hostel", "హాస్టల్"].some(has)
 
-      // Rythu Bharosa detection
-      const isRythu = [
-        "రైతు భరోసా", "భరోసా", "వైఎస్ఆర్",
-        "rythu bharosa", "bharosa", "ysr",
-        "13500", "పదమూడు", "thirteen"
-      ].some(has)
-
-      // PM Kisan + eligibility
+      // PM Kisan
       if (isPmKisan && isEligQ) return t.pmKisanEligReply
-      // PM Kisan + apply
       if (isPmKisan && isApplyQ) return t.pmKisanApplyReply
-      // Rythu Bharosa + eligibility
-      if (isRythu && isEligQ) return t.rythuEligReply
-      // Rythu Bharosa + apply
-      if (isRythu && isApplyQ) return t.rythuApplyReply
-
-      // General eligibility question (no specific scheme)
-      if (isEligQ) {
-        return lang === "te"
-          ? "ఏ పథకం అర్హత గురించి తెలుసుకోవాలో చెప్పండి. పీఎం కిసాన్ అర్హత లేదా రైతు భరోసా అర్హత అని అడగండి."
-          : "Please specify which scheme. Ask about PM Kisan eligibility or Rythu Bharosa eligibility."
-      }
-
-      // General apply question (no specific scheme)
-      if (isApplyQ) {
-        return lang === "te"
-          ? "ఏ పథకానికి దరఖాస్తు చేయాలో చెప్పండి. పీఎం కిసాన్ దరఖాస్తు లేదా రైతు భరోసా దరఖాస్తు అని అడగండి."
-          : "Please specify which scheme. Ask how to apply for PM Kisan or how to apply for Rythu Bharosa."
-      }
-
-      // General PM Kisan info
       if (isPmKisan) return t.pmKisanReply
-      // General Rythu Bharosa info
+
+      // PM Fasal Bima
+      if (isFasal) {
+        if (isEligQ) return lang === "te"
+          ? "పీఎం ఫసల్ బీమా అర్హత: నోటిఫైడ్ ప్రాంతాల్లో నోటిఫైడ్ పంటలు పండించే అన్ని రైతులు అర్హులు. రుణ మరియు రుణేతర రైతులు ఇద్దరూ, కౌలు రైతులు కూడా దరఖాస్తు చేయవచ్చు."
+          : "PM Fasal Bima eligibility: All farmers growing notified crops in notified areas are eligible. Both loanee and non-loanee farmers, as well as tenant farmers can apply."
+        if (isApplyQ) return lang === "te"
+          ? "పీఎం ఫసల్ బీమా కోసం pmfby.gov.in వెబ్‌సైట్‌లో లేదా సమీపంలోని బ్యాంక్ లేదా CSC కేంద్రంలో దరఖాస్తు చేయండి. ఖరీఫ్‌కు 2% మరియు రబీ పంటలకు 1.5% ప్రీమియం మాత్రమే."
+          : "Apply for PM Fasal Bima at pmfby.gov.in or your nearest bank or CSC center. Premium is just 2% for Kharif and 1.5% for Rabi crops."
+        return lang === "te"
+          ? "పీఎం ఫసల్ బీమా యోజన ద్వారా ఖరీఫ్‌కు 2% మరియు రబీకి 1.5% ప్రీమియంతో పంట బీమా అందుబాటులో ఉంది. ప్రకృతి వైపరీత్యాల నుండి రైతులను రక్షిస్తుంది."
+          : "PM Fasal Bima Yojana provides crop insurance at just 2% premium for Kharif and 1.5% for Rabi. Protects farmers against natural calamities."
+      }
+
+      // Kisan Credit Card
+      if (isKCC) {
+        if (isEligQ) return lang === "te"
+          ? "కిసాన్ క్రెడిట్ కార్డ్ అర్హత: అన్ని రైతులు, కౌలు రైతులు, భాగస్వామ్య రైతులు అర్హులు. పంట ఉత్పత్తి లేదా అనుబంధ కార్యకలాపాల్లో ఉండాలి."
+          : "KCC eligibility: All farmers including tenant and sharecroppers are eligible. Must be in crop production or allied activities."
+        if (isApplyQ) return lang === "te"
+          ? "KCC కోసం సమీపంలోని జాతీయ బ్యాంక్ శాఖకు వెళ్ళి KCC ఫారమ్ నింపండి. భూమి రికార్డులు, ఆధార్ సమర్పించండి. 14 రోజుల్లో KCC జారీ అవుతుంది."
+          : "Visit your nearest nationalized bank, fill the KCC form, submit land records and Aadhaar. KCC is issued within 14 days."
+        return lang === "te"
+          ? "కిసాన్ క్రెడిట్ కార్డ్ ద్వారా రూ. 3 లక్షల వరకు 4% వడ్డీతో రుణం అందుబాటులో ఉంది. సకాలంలో చెల్లిస్తే మరో 3% సబ్వెన్షన్."
+          : "Kisan Credit Card gives loans up to Rs. 3 lakhs at 4% interest. Additional 3% subvention for timely repayment."
+      }
+
+      // PM Krishi Sinchai
+      if (isPMKSY) {
+        return lang === "te"
+          ? "పీఎం కృషి సించాయ్ యోజన ద్వారా చిన్న రైతులకు డ్రిప్ మరియు స్ప్రింక్లర్ వ్యవస్థలపై 55% సబ్సిడీ. రాష్ట్ర వ్యవసాయ శాఖ ద్వారా దరఖాస్తు చేయండి."
+          : "PM Krishi Sinchai Yojana offers 55% subsidy on drip and sprinkler systems for small farmers. Apply through State Agriculture Department."
+      }
+
+      // Rythu Bharosa
+      if (isRythu && isEligQ) return t.rythuEligReply
+      if (isRythu && isApplyQ) return t.rythuApplyReply
       if (isRythu) return t.rythuBharosaReply
 
-      // Generic "రైతు" (farmer) mentions
-      if (has("రైతు") || has("farmer")) {
+      // Annadatha Sukhibhava
+      if (isAnnadatha) {
         return lang === "te"
-          ? "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. పథకం గురించి, అర్హత గురించి, లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి."
-          : "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Ask about the scheme details, eligibility, or how to apply."
+          ? "వైఎస్ఆర్ అన్నదాత సుఖీభవ పథకం రైతు భరోసా లబ్ధిదారులకు ఉచిత పంట బీమా అందిస్తుంది. ప్రకృతి వైపరీత్యాల్లో నష్టపరిహారం అందుతుంది. గ్రామ సచివాలయంలో ధృవీకరించండి."
+          : "YSR Annadatha Sukhibhava provides free crop insurance for Rythu Bharosa beneficiaries. Automatic enrollment. Verify at your Village Secretariat."
+      }
+
+      // AP Micro Irrigation
+      if (isMicroIrr) {
+        return lang === "te"
+          ? "AP మైక్రో ఇరిగేషన్ సబ్సిడీలో SC/ST రైతులకు 90%, ఇతరులకు 80% సబ్సిడీ. జిల్లా వ్యవసాయ కార్యాలయంలో దరఖాస్తు చేయండి."
+          : "AP Micro Irrigation gives 90% subsidy for SC/ST farmers, 80% for others. Apply at District Agriculture Office."
+      }
+
+      // Vasathi Deevena
+      if (isVasathi) {
+        return lang === "te"
+          ? "జగనన్న వసతి దీవెన ద్వారా రైతు పిల్లల విద్యా ఖర్చులకు సంవత్సరానికి రూ. 20,000 అందుతుంది. కళాశాల ద్వారా దరఖాస్తు చేయండి. కుటుంబ ఆదాయం రూ. 2.5 లక్షల కంటే తక్కువ ఉండాలి."
+          : "Jagananna Vasathi Deevena provides Rs. 20,000 per year for farmer children education. Apply through college. Family income must be below Rs. 2.5 lakhs."
+      }
+
+      // General eligibility
+      if (isEligQ) {
+        return lang === "te"
+          ? "ఏ పథకం అర్హత గురించి తెలుసుకోవాలో చెప్పండి. పీఎం కిసాన్, ఫసల్ బీమా, KCC, రైతు భరోసా, వసతి దీవెన వంటి పథకాల గురించి అడగవచ్చు."
+          : "Please specify which scheme. You can ask about PM Kisan, Fasal Bima, KCC, Rythu Bharosa, Vasathi Deevena and more."
+      }
+      if (isApplyQ) {
+        return lang === "te"
+          ? "ఏ పథకానికి దరఖాస్తు చేయాలో చెప్పండి. పీఎం కిసాన్, ఫసల్ బీమా, KCC, రైతు భరోసా వంటి పథకాలకు దరఖాస్తు ప్రక్రియ చెప్పగలను."
+          : "Please specify which scheme to apply for. I can guide you for PM Kisan, Fasal Bima, KCC, Rythu Bharosa, and more."
+      }
+
+      // Generic farmer/scheme
+      if (has("రైతు") || has("farmer") || has("పథకం") || has("scheme")) {
+        return lang === "te"
+          ? "నేను 8 ప్రభుత్వ పథకాల గురించి చెప్పగలను: పీఎం కిసాన్, ఫసల్ బీమా, KCC, కృషి సించాయ్ (కేంద్రం), రైతు భరోసా, అన్నదాత సుఖీభవ, మైక్రో ఇరిగేషన్, వసతి దీవెన (AP). ఏ పథకం గురించి తెలుసుకోవాలో చెప్పండి."
+          : "I can help with 8 schemes: PM Kisan, Fasal Bima, KCC, Krishi Sinchai (Central), Rythu Bharosa, Annadatha Sukhibhava, Micro Irrigation, Vasathi Deevena (AP). Which one do you want to know about?"
       }
 
       // Help / greeting
-      const helpKeywords = [
-        "హలో", "నమస్కారం", "సహాయం", "ఏమి", "ఏం", "చెప్పు",
-        "hello", "help", "what", "tell", "hi", "scheme", "పథకం"
-      ]
-      if (helpKeywords.some(has)) {
+      if (["హలో", "నమస్కారం", "సహాయం", "hello", "help", "hi", "చెప్పు", "tell"].some(has)) {
         return lang === "te"
-          ? "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. పథకం గురించి, అర్హత గురించి, లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి."
-          : "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Ask about scheme details, eligibility criteria, or how to apply."
+          ? "నమస్కారం! నేను 4 కేంద్ర పథకాలు (పీఎం కిసాన్, ఫసల్ బీమా, KCC, కృషి సించాయ్) మరియు 4 AP పథకాల (రైతు భరోసా, అన్నదాత సుఖీభవ, మైక్రో ఇరిగేషన్, వసతి దీవెన) గురించి చెప్పగలను. ఏది అడగండి!"
+          : "Hello! I can tell you about 4 Central schemes (PM Kisan, Fasal Bima, KCC, Krishi Sinchai) and 4 AP schemes (Rythu Bharosa, Annadatha Sukhibhava, Micro Irrigation, Vasathi Deevena). Ask me anything!"
       }
 
       return t.notUnderstood
@@ -378,8 +412,8 @@ export function VoiceAssistant() {
     if (messages.length === 0) {
       const welcome =
         lang === "te"
-          ? "నమస్కారం! నేను మీ వాయిస్ అసిస్టెంట్ని. పీఎం కిసాన్ లేదా రైతు భరోసా గురించి, అర్హత గురించి, లేదా దరఖాస్తు ఎలా చేయాలో నన్ను అడగండి."
-          : "Hello! I am your voice assistant. Ask me about PM Kisan or Rythu Bharosa, their eligibility, or how to apply."
+          ? "నమస్కారం! నేను మీ వాయిస్ అసిస్టెంట్ని. పీఎం కిసాన్, ఫసల్ బీమా, KCC, రైతు భరోసా వంటి 8 పథకాల గురించి నన్ను అడగండి."
+          : "Hello! I am your voice assistant. Ask me about 8 schemes including PM Kisan, Fasal Bima, KCC, Rythu Bharosa, and more."
       setTimeout(() => {
         setMessages([{ role: "assistant", text: welcome }])
         speakText(welcome)

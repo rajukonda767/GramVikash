@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import { useChat } from "@ai-sdk/react"
+import { useChat, type UseChatOptions } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { useLanguage } from "@/lib/language-context"
 import { speak, stopSpeaking, initVoices } from "@/lib/tts"
 import {
-  MessageCircle,
   Mic,
   Send,
   Volume2,
@@ -33,19 +32,18 @@ export default function ChatPage() {
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const lastSpokenRef = useRef<string>("")
+  const langRef = useRef(lang)
+  langRef.current = lang
 
-  const { messages, sendMessage, status } = useChat({
+  // Recreate transport when lang changes so body always has current lang
+  const chatOptions: UseChatOptions = {
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      prepareSendMessagesRequest: ({ id, messages: msgs }) => ({
-        body: {
-          messages: msgs,
-          id,
-          lang,
-        },
-      }),
+      body: { lang },
     }),
-  })
+  }
+
+  const { messages, sendMessage, status } = useChat(chatOptions)
 
   const isLoading = status === "streaming" || status === "submitted"
 
@@ -63,8 +61,8 @@ export default function ChatPage() {
     const text = getMessageText(lastMsg)
     if (!text || text === lastSpokenRef.current) return
     lastSpokenRef.current = text
-    speak(text, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
-  }, [status, messages, lang])
+    speak(text, langRef.current as "en" | "te", () => setIsSpeaking(true), () => setIsSpeaking(false))
+  }, [status, messages])
 
   const handleStopSpeaking = useCallback(() => {
     stopSpeaking()
@@ -72,20 +70,20 @@ export default function ChatPage() {
   }, [])
 
   const handleSpeakMessage = useCallback((text: string) => {
-    speak(text, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
-  }, [lang])
+    speak(text, langRef.current as "en" | "te", () => setIsSpeaking(true), () => setIsSpeaking(false))
+  }, [])
 
   const startListening = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SR) {
-      alert(lang === "te" ? "Chrome బ్రౌజర్ వాడండి" : "Please use Chrome browser")
+      alert(langRef.current === "te" ? "Chrome బ్రౌజర్ వాడండి" : "Please use Chrome browser")
       return
     }
     stopSpeaking()
     setIsSpeaking(false)
 
     const recognition = new SR()
-    recognition.lang = lang === "te" ? "te-IN" : "en-IN"
+    recognition.lang = langRef.current === "te" ? "te-IN" : "en-IN"
     recognition.interimResults = false
     recognition.maxAlternatives = 3
 
@@ -101,7 +99,7 @@ export default function ChatPage() {
     recognitionRef.current = recognition
     recognition.start()
     setIsListening(true)
-  }, [lang, sendMessage])
+  }, [sendMessage])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,17 +109,19 @@ export default function ChatPage() {
   }
 
   const suggestedQuestions = lang === "te" ? [
-    "వాతావరణం ఎలా ఉంటుంది?",
+    "నేటి వాతావరణం ఎలా ఉంటుంది?",
     "వరి సాగు ఎలా చేయాలి?",
     "పీఎం కిసాన్ గురించి చెప్పు",
     "నేల పరీక్ష ఎలా చేయాలి?",
     "పంట వ్యాధులు ఎలా నివారించాలి?",
+    "రైతు భరోసా అర్హత ఏమిటి?",
   ] : [
     "How is the weather today?",
     "How to grow paddy rice?",
-    "Tell me about PM Kisan",
+    "Tell me about PM Kisan scheme",
     "How to do soil testing?",
     "How to prevent crop diseases?",
+    "What is Rythu Bharosa eligibility?",
   ]
 
   return (
@@ -144,7 +144,6 @@ export default function ChatPage() {
       <div className="flex-1 rounded-2xl bg-card/50 backdrop-blur-xl border border-border shadow-lg overflow-hidden flex flex-col">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4 min-h-[300px]">
-          {/* Welcome message if no messages */}
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 gap-6">
               <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
