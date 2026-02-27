@@ -243,34 +243,78 @@ export function VoiceAssistant() {
     (transcript: string): string => {
       const lower = transcript.toLowerCase()
       const original = transcript
+      const has = (kw: string) => lower.includes(kw) || original.includes(kw)
 
-      const pmKisanKeywords = [
+      // Detect intent: eligibility or apply
+      const isEligQ = [
+        "అర్హత", "eligib", "eligible", "criteria", "who can",
+        "ఎవరు", "ప్రమాణ", "qualify", "qualification"
+      ].some(has)
+
+      const isApplyQ = [
+        "దరఖాస్తు", "apply", "how to", "ఎలా", "register",
+        "registration", "నమోదు", "process", "ప్రక్రియ", "website",
+        "వెబ్‌సైట్", "online", "ఆన్‌లైన్"
+      ].some(has)
+
+      // PM Kisan detection
+      const isPmKisan = [
         "పీఎం కిసాన్", "కిసాన్", "పి ఎం", "కిసాన", "పీఎం",
         "pm kisan", "kisan", "pm kisan scheme",
-        "6000", "ఆరు వేల", "six thousand",
-        "పథకం", "scheme"
-      ]
-      if (pmKisanKeywords.some((kw) => lower.includes(kw) || original.includes(kw))) {
-        return t.pmKisanReply
-      }
+        "6000", "ఆరు వేల", "six thousand"
+      ].some(has)
 
-      const rythuKeywords = [
-        "రైతు భరోసా", "భరోసా", "రైతు", "వైఎస్ఆర్",
-        "rythu bharosa", "bharosa", "rythu", "ysr",
+      // Rythu Bharosa detection
+      const isRythu = [
+        "రైతు భరోసా", "భరోసా", "వైఎస్ఆర్",
+        "rythu bharosa", "bharosa", "ysr",
         "13500", "పదమూడు", "thirteen"
-      ]
-      if (rythuKeywords.some((kw) => lower.includes(kw) || original.includes(kw))) {
-        return t.rythuBharosaReply
+      ].some(has)
+
+      // PM Kisan + eligibility
+      if (isPmKisan && isEligQ) return t.pmKisanEligReply
+      // PM Kisan + apply
+      if (isPmKisan && isApplyQ) return t.pmKisanApplyReply
+      // Rythu Bharosa + eligibility
+      if (isRythu && isEligQ) return t.rythuEligReply
+      // Rythu Bharosa + apply
+      if (isRythu && isApplyQ) return t.rythuApplyReply
+
+      // General eligibility question (no specific scheme)
+      if (isEligQ) {
+        return lang === "te"
+          ? "ఏ పథకం అర్హత గురించి తెలుసుకోవాలో చెప్పండి. పీఎం కిసాన్ అర్హత లేదా రైతు భరోసా అర్హత అని అడగండి."
+          : "Please specify which scheme. Ask about PM Kisan eligibility or Rythu Bharosa eligibility."
       }
 
+      // General apply question (no specific scheme)
+      if (isApplyQ) {
+        return lang === "te"
+          ? "ఏ పథకానికి దరఖాస్తు చేయాలో చెప్పండి. పీఎం కిసాన్ దరఖాస్తు లేదా రైతు భరోసా దరఖాస్తు అని అడగండి."
+          : "Please specify which scheme. Ask how to apply for PM Kisan or how to apply for Rythu Bharosa."
+      }
+
+      // General PM Kisan info
+      if (isPmKisan) return t.pmKisanReply
+      // General Rythu Bharosa info
+      if (isRythu) return t.rythuBharosaReply
+
+      // Generic "రైతు" (farmer) mentions
+      if (has("రైతు") || has("farmer")) {
+        return lang === "te"
+          ? "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. పథకం గురించి, అర్హత గురించి, లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి."
+          : "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Ask about the scheme details, eligibility, or how to apply."
+      }
+
+      // Help / greeting
       const helpKeywords = [
         "హలో", "నమస్కారం", "సహాయం", "ఏమి", "ఏం", "చెప్పు",
-        "hello", "help", "what", "tell", "hi"
+        "hello", "help", "what", "tell", "hi", "scheme", "పథకం"
       ]
-      if (helpKeywords.some((kw) => lower.includes(kw) || original.includes(kw))) {
+      if (helpKeywords.some(has)) {
         return lang === "te"
-          ? "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. ఏ పథకం గురించి తెలుసుకోవాలో చెప్పండి."
-          : "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Please tell me which scheme you want to know about."
+          ? "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. పథకం గురించి, అర్హత గురించి, లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి."
+          : "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Ask about scheme details, eligibility criteria, or how to apply."
       }
 
       return t.notUnderstood
@@ -334,8 +378,8 @@ export function VoiceAssistant() {
     if (messages.length === 0) {
       const welcome =
         lang === "te"
-          ? "నమస్కారం! నేను మీ వాయిస్ అసిస్టెంట్ని. పీఎం కిసాన్ లేదా రైతు భరోసా గురించి నన్ను అడగండి."
-          : "Hello! I am your voice assistant. Ask me about PM Kisan or Rythu Bharosa."
+          ? "నమస్కారం! నేను మీ వాయిస్ అసిస్టెంట్ని. పీఎం కిసాన్ లేదా రైతు భరోసా గురించి, అర్హత గురించి, లేదా దరఖాస్తు ఎలా చేయాలో నన్ను అడగండి."
+          : "Hello! I am your voice assistant. Ask me about PM Kisan or Rythu Bharosa, their eligibility, or how to apply."
       setTimeout(() => {
         setMessages([{ role: "assistant", text: welcome }])
         speakText(welcome)

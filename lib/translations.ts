@@ -32,10 +32,10 @@ export const translations = {
     listening: "Listening...",
     tapToSpeak: "Tap to speak",
     voiceAssistant: "Voice Assistant",
-    voiceHint: "Try saying: \"Tell me about PM Kisan\" or \"Tell me about Rythu Bharosa\"",
-    pmKisanReply: "Under PM Kisan scheme, the government provides six thousand rupees per year to farmers in three installments.",
-    rythuBharosaReply: "Under YSR Rythu Bharosa scheme, eligible farmers receive thirteen thousand five hundred rupees per year as financial assistance.",
-    notUnderstood: "Sorry, I didn't understand. Please try asking about PM Kisan or Rythu Bharosa.",
+    voiceHint: "Try saying: \"Tell me about PM Kisan\" or \"How to apply for Rythu Bharosa\"",
+    pmKisanReply: "Under PM Kisan scheme, the government provides six thousand rupees per year to farmers in three installments of two thousand rupees each.",
+    rythuBharosaReply: "Under YSR Rythu Bharosa scheme, eligible farmers receive thirteen thousand five hundred rupees per year as financial assistance from the Andhra Pradesh government.",
+    notUnderstood: "Sorry, I didn't understand. Please try asking about PM Kisan or Rythu Bharosa, their eligibility, or how to apply.",
     you: "You",
     assistant: "Assistant",
     language: "Language",
@@ -45,6 +45,57 @@ export const translations = {
     perYear: "/ year",
     rs6000: "Rs. 6,000",
     rs13500: "Rs. 13,500",
+
+    // Eligibility & Apply
+    eligibility: "Eligibility Criteria",
+    howToApply: "How to Apply",
+    applyNow: "Apply Now",
+    applyOnline: "Apply Online",
+
+    // PM Kisan eligibility
+    pmKisanElig1: "All landholding farmer families with cultivable land",
+    pmKisanElig2: "Family includes husband, wife, and minor children",
+    pmKisanElig3: "Institutional landholders are NOT eligible",
+    pmKisanElig4: "Income tax payers and government employees are excluded",
+    pmKisanElig5: "Must have Aadhaar card linked with bank account",
+
+    // PM Kisan apply steps
+    pmKisanApply1: "Visit the official PM Kisan website: pmkisan.gov.in",
+    pmKisanApply2: "Click on 'New Farmer Registration' on the home page",
+    pmKisanApply3: "Select your state and enter your Aadhaar number",
+    pmKisanApply4: "Fill in personal details: name, address, bank account, IFSC code",
+    pmKisanApply5: "Upload land ownership documents and Aadhaar card",
+    pmKisanApply6: "Submit the form and note down the registration number",
+    pmKisanApplyLink: "https://pmkisan.gov.in",
+
+    // Rythu Bharosa eligibility
+    rythuElig1: "Must be a resident farmer of Andhra Pradesh",
+    rythuElig2: "Should own cultivable agricultural land",
+    rythuElig3: "Land records must be updated in the state portal (Webland)",
+    rythuElig4: "Aadhaar-linked bank account is mandatory",
+    rythuElig5: "Tenant farmers with valid tenancy agreement are also eligible",
+
+    // Rythu Bharosa apply steps
+    rythuApply1: "Visit the nearest Meeseva center or Village Secretariat",
+    rythuApply2: "Carry Aadhaar card, land passbook (pattadar passbook), and bank passbook",
+    rythuApply3: "Fill the application form at the center",
+    rythuApply4: "Submit land documents for verification by the Village Revenue Officer",
+    rythuApply5: "Once verified, your name will be added to the beneficiary list",
+    rythuApply6: "You can also check status online at ysrrythubharosa.ap.gov.in",
+    rythuApplyLink: "https://ysrrythubharosa.ap.gov.in",
+
+    // Documents required
+    docsRequired: "Documents Required",
+    aadhaarCard: "Aadhaar Card",
+    bankPassbook: "Bank Passbook (linked to Aadhaar)",
+    landDocs: "Land Ownership Documents / Pattadar Passbook",
+    rationCard: "Ration Card (if available)",
+
+    // Voice responses for eligibility & apply
+    pmKisanEligReply: "To be eligible for PM Kisan, you must be a landholding farmer family. Your Aadhaar must be linked to your bank account. Income tax payers and government employees are not eligible.",
+    pmKisanApplyReply: "To apply for PM Kisan, visit pmkisan.gov.in website. Click New Farmer Registration. Enter your Aadhaar number, fill your details, upload land documents, and submit the form.",
+    rythuEligReply: "For Rythu Bharosa, you must be a resident farmer of Andhra Pradesh with cultivable land. Your land records must be updated in the state portal, and you need an Aadhaar-linked bank account.",
+    rythuApplyReply: "To apply for Rythu Bharosa, visit your nearest Meeseva center or Village Secretariat. Carry your Aadhaar card, land passbook, and bank passbook. Fill the form and submit documents for verification.",
   },
   te: {
     appTitle: "రైతు వాయిస్ స్కీమ్ అసిస్టెంట్",
@@ -77,10 +128,10 @@ export const translations = {
     listening: "వింటున్నాను...",
     tapToSpeak: "మాట్లాడటానికి నొక్కండి",
     voiceAssistant: "వాయిస్ అసిస్టెంట్",
-    voiceHint: "ఇలా అడగండి: \"పీఎం కిసాన్ గురించి చెప్పు\" లేదా \"రైతు భరోసా గురించి చెప్పు\"",
-    pmKisanReply: "పీఎం కిసాన్ పథకం ద్వారా రైతులకు సంవత్సరానికి ఆరు వేల రూపాయలు మూడు విడతలుగా ప్రభుత్వం అందిస్తుంది.",
-    rythuBharosaReply: "వైఎస్ఆర్ రైతు భరోసా పథకం ద్వారా అర్హులైన రైతులకు ప్రతి సంవత్సరం పదమూడు వేల ఐదు వందల రూపాయల ఆర్థిక సహాయం అందుతుంది.",
-    notUnderstood: "క్షమించండి, నాకు అర్థం కాలేదు. దయచేసి పీఎం కిసాన్ లేదా రైతు భరోసా గురించి అడగండి.",
+    voiceHint: "ఇలా అడగండి: \"పీఎం కిసాన్ గురించి చెప్పు\" లేదా \"రైతు భరోసాకు ఎలా దరఖాస్తు చేయాలి\"",
+    pmKisanReply: "పీఎం కిసాన్ పథకం ద్వారా రైతులకు సంవత్సరానికి ఆరు వేల రూపాయలు మూడు విడతలుగా రెండు వేల రూపాయల చొప్పున ప్రభుత్వం అందిస్తుంది.",
+    rythuBharosaReply: "వైఎస్ఆర్ రైతు భరోసా పథకం ద్వారా అర్హులైన రైతులకు ప్రతి సంవత్సరం పదమూడు వేల ఐదు వందల రూపాయల ఆర్థిక సహాయం ఆంధ్రప్రదేశ్ ప్రభుత్వం అందిస్తుంది.",
+    notUnderstood: "క్షమించండి, నాకు అర్థం కాలేదు. దయచేసి పీఎం కిసాన్ లేదా రైతు భరోసా గురించి, వాటి అర్హత లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి.",
     you: "మీరు",
     assistant: "అసిస్టెంట్",
     language: "భాష",
@@ -90,5 +141,56 @@ export const translations = {
     perYear: "/ సంవత్సరం",
     rs6000: "రూ. 6,000",
     rs13500: "రూ. 13,500",
+
+    // Eligibility & Apply
+    eligibility: "అర్హత ప్రమాణాలు",
+    howToApply: "దరఖాస్తు ఎలా చేయాలి",
+    applyNow: "ఇప్పుడు దరఖాస్తు చేయండి",
+    applyOnline: "ఆన్‌లైన్‌లో దరఖాస్తు చేయండి",
+
+    // PM Kisan eligibility
+    pmKisanElig1: "సాగు భూమి ఉన్న అన్ని రైతు కుటుంబాలు",
+    pmKisanElig2: "కుటుంబం అంటే భర్త, భార్య మరియు మైనర్ పిల్లలు",
+    pmKisanElig3: "సంస్థాగత భూ యజమానులు అర్హులు కారు",
+    pmKisanElig4: "ఆదాయపు పన్ను చెల్లింపుదారులు మరియు ప్రభుత్వ ఉద్యోగులు మినహాయింపు",
+    pmKisanElig5: "బ్యాంకు ఖాతాతో లింక్ చేసిన ఆధార్ కార్డు తప్పనిసరి",
+
+    // PM Kisan apply steps
+    pmKisanApply1: "అధికారిక వెబ్‌సైట్ pmkisan.gov.in కు వెళ్ళండి",
+    pmKisanApply2: "హోమ్ పేజీలో 'కొత్త రైతు నమోదు' పై క్లిక్ చేయండి",
+    pmKisanApply3: "మీ రాష్ట్రం ఎంచుకోండి, ఆధార్ నంబర్ నమోదు చేయండి",
+    pmKisanApply4: "వ్యక్తిగత వివరాలు: పేరు, చిరునామా, బ్యాంకు ఖాతా, IFSC కోడ్ నమోదు చేయండి",
+    pmKisanApply5: "భూమి యాజమాన్య పత్రాలు మరియు ఆధార్ కార్డు అప్‌లోడ్ చేయండి",
+    pmKisanApply6: "ఫారమ్ సబ్మిట్ చేసి, రిజిస్ట్రేషన్ నంబర్ నోట్ చేసుకోండి",
+    pmKisanApplyLink: "https://pmkisan.gov.in",
+
+    // Rythu Bharosa eligibility
+    rythuElig1: "ఆంధ్రప్రదేశ్ నివాసి రైతుగా ఉండాలి",
+    rythuElig2: "సాగు భూమి కలిగి ఉండాలి",
+    rythuElig3: "భూమి రికార్డులు రాష్ట్ర పోర్టల్‌లో (వెబ్‌ల్యాండ్) నవీకరించబడి ఉండాలి",
+    rythuElig4: "ఆధార్‌తో లింక్ చేసిన బ్యాంకు ఖాతా తప్పనిసరి",
+    rythuElig5: "చెల్లుబాటు అయ్యే కౌలు ఒప్పందం ఉన్న కౌలు రైతులు కూడా అర్హులే",
+
+    // Rythu Bharosa apply steps
+    rythuApply1: "సమీపంలోని మీసేవ కేంద్రం లేదా గ్రామ సచివాలయానికి వెళ్ళండి",
+    rythuApply2: "ఆధార్ కార్డు, భూమి పాస్‌బుక్ (పట్టాదార్ పాస్‌బుక్), బ్యాంకు పాస్‌బుక్ తీసుకెళ్ళండి",
+    rythuApply3: "కేంద్రంలో దరఖాస్తు ఫారమ్ నింపండి",
+    rythuApply4: "గ్రామ రెవెన్యూ అధికారి ధృవీకరణ కోసం భూమి పత్రాలు సబ్మిట్ చేయండి",
+    rythuApply5: "ధృవీకరణ తర్వాత, మీ పేరు లబ్ధిదారుల జాబితాలో చేర్చబడుతుంది",
+    rythuApply6: "ysrrythubharosa.ap.gov.in లో ఆన్‌లైన్‌లో స్థితి తనిఖీ చేయవచ్చు",
+    rythuApplyLink: "https://ysrrythubharosa.ap.gov.in",
+
+    // Documents required
+    docsRequired: "అవసరమైన పత్రాలు",
+    aadhaarCard: "ఆధార్ కార్డు",
+    bankPassbook: "బ్యాంకు పాస్‌బుక్ (ఆధార్‌తో లింక్)",
+    landDocs: "భూమి యాజమాన్య పత్రాలు / పట్టాదార్ పాస్‌బుక్",
+    rationCard: "రేషన్ కార్డు (అందుబాటులో ఉంటే)",
+
+    // Voice responses
+    pmKisanEligReply: "పీఎం కిసాన్ అర్హత కోసం, మీరు సాగు భూమి ఉన్న రైతు కుటుంబంగా ఉండాలి. ఆధార్ బ్యాంకు ఖాతాతో లింక్ చేయాలి. ఆదాయపు పన్ను చెల్లింపుదారులు, ప్రభుత్వ ఉద్యోగులు అర్హులు కారు.",
+    pmKisanApplyReply: "పీఎం కిసాన్ కోసం దరఖాస్తు చేయడానికి, pmkisan.gov.in వెబ్‌సైట్‌కు వెళ్ళండి. కొత్త రైతు నమోదు పై క్లిక్ చేయండి. ఆధార్ నంబర్ నమోదు చేసి, వ్యక్తిగత వివరాలు నింపి, భూమి పత్రాలు అప్‌లోడ్ చేసి, ఫారమ్ సబ్మిట్ చేయండి.",
+    rythuEligReply: "రైతు భరోసా కోసం, మీరు ఆంధ్రప్రదేశ్ నివాసి రైతుగా ఉండాలి. సాగు భూమి ఉండాలి. భూమి రికార్డులు రాష్ట్ర పోర్టల్‌లో నవీకరించబడి ఉండాలి. ఆధార్‌తో లింక్ చేసిన బ్యాంకు ఖాతా తప్పనిసరి.",
+    rythuApplyReply: "రైతు భరోసా కోసం దరఖాస్తు చేయడానికి, సమీపంలోని మీసేవ కేంద్రం లేదా గ్రామ సచివాలయానికి వెళ్ళండి. ఆధార్ కార్డు, భూమి పాస్‌బుక్, బ్యాంకు పాస్‌బుక్ తీసుకెళ్ళండి. దరఖాస్తు ఫారమ్ నింపి, పత్రాలు ధృవీకరణ కోసం సబ్మిట్ చేయండి.",
   },
 } as const
