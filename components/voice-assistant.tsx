@@ -143,8 +143,8 @@ function speakWithBrowserTTS(
 
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = langCode
-  utterance.rate = 0.85
-  utterance.pitch = 1
+  utterance.rate = 0.92
+  utterance.pitch = 1.05
   utterance.volume = 1
 
   // Find best voice: prefer Google Chirp3-HD-Aoede for Telugu fluency

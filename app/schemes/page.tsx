@@ -2,14 +2,14 @@
 
 import { useState } from "react"
 import { useLanguage } from "@/lib/language-context"
-import { VoiceFormChatbot } from "@/components/voice-form-chatbot"
+import { VoiceFormChatbot, type FormData } from "@/components/voice-form-chatbot"
 import { SchemeCards } from "@/components/scheme-cards"
 import { VoiceAssistant } from "@/components/voice-assistant"
 import { Shield, Mic } from "lucide-react"
 
 export default function SchemesPage() {
   const { lang, t } = useLanguage()
-  const [showSchemes, setShowSchemes] = useState(false)
+  const [farmerData, setFarmerData] = useState<FormData | null>(null)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
@@ -29,10 +29,15 @@ export default function SchemesPage() {
         </div>
       </div>
 
-      {!showSchemes ? (
-        <VoiceFormChatbot onComplete={() => setShowSchemes(true)} />
+      {!farmerData ? (
+        <VoiceFormChatbot onComplete={(data) => setFarmerData(data)} />
       ) : (
-        <SchemeCards onBack={() => setShowSchemes(false)} />
+        <SchemeCards
+          onBack={() => setFarmerData(null)}
+          crop={farmerData.crop}
+          farmSize={farmerData.farmSize}
+          farmerName={farmerData.name}
+        />
       )}
 
       {/* Voice assistant floating button */}

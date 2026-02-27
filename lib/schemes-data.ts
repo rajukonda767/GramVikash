@@ -293,7 +293,7 @@ export const ALL_SCHEMES: SchemeData[] = [
     color: "teal",
     eligibility: {
       en: ["Rythu Bharosa enrolled farmers", "Crop registered with agriculture dept", "Both landowners & tenant farmers"],
-      te: ["రైతు భరోసాలో నమోదైన రైతులు", "వ్యవసాయ శాఖలో పంట నమోదు", "భూ యజమానులు & కౌలు రైతులు ఇద్దరూ"],
+      te: ["రైతు భరోసాలో ���మోదైన రైతులు", "వ్యవసాయ శాఖలో పంట నమోదు", "భూ యజమానులు & కౌలు రైతులు ఇద్దరూ"],
     },
     applySteps: {
       en: ["Automatic for Rythu Bharosa beneficiaries", "Verify at Village Secretariat", "Crop details updated by VRO/VAO"],
@@ -401,7 +401,7 @@ export const ALL_SCHEMES: SchemeData[] = [
     color: "amber",
     eligibility: {
       en: ["AP farmers growing vegetables, fruits, spices", "Must register at Rythu Bazaar committee", "Fresh produce only - no stored goods"],
-      te: ["కూరగాయలు, పండ్లు, సుగంధ ద్రవ్యాలు పండించే AP రైతులు", "రైతు బజార్ కమిటీలో నమోదు", "తాజా ఉత్పత్తులు మాత్రమే"],
+      te: ["కూరగాయలు, పండ్లు, సుగంధ ద్రవ్యాలు పండించే AP రైతులు", "రైతు బజార్ కమిటీలో నమో���ు", "తాజా ఉత్పత్తులు మాత్రమే"],
     },
     applySteps: {
       en: ["Visit nearest Rythu Bazaar", "Register with market committee", "Get farmer ID & stall allotment", "Sell directly to consumers"],
@@ -414,32 +414,53 @@ export const ALL_SCHEMES: SchemeData[] = [
 
 /**
  * Get relevant schemes for a given crop & farm size.
- * Returns top 4-5 schemes sorted by relevance.
+ * Returns top 4-6 schemes sorted by relevance.
+ * Always returns at least 4 schemes (universal ones fill gaps).
  */
 export function getRelevantSchemes(
   crop: string,
   farmSize: string,
 ): SchemeData[] {
-  // Score each scheme for relevance
   const scored = ALL_SCHEMES.map((s) => {
     let score = 0
-    // Crop match
-    if (s.crops.includes("all")) score += 2
-    else if (s.crops.includes(crop)) score += 5
-    else score -= 10 // not relevant at all
 
-    // Farm size match
-    if (s.farmSizes.includes("all")) score += 1
-    else if (s.farmSizes.includes(farmSize)) score += 3
-    else score -= 2
+    // Crop-specific match is highest priority
+    if (s.crops.includes(crop)) score += 10
+    // Universal schemes always relevant
+    else if (s.crops.includes("all")) score += 4
+    // Not matching this crop at all
+    else score -= 20
+
+    // Farm size bonus
+    if (s.farmSizes.includes("all")) score += 2
+    else if (s.farmSizes.includes(farmSize)) score += 5
+    // Penalize if farm size doesn't match (but don't eliminate)
+    else score -= 3
+
+    // Small bonus to ensure mix of central + AP
+    if (s.category === "ap") score += 1
 
     return { scheme: s, score }
   })
 
-  // Filter only relevant (score > 0) and sort by score desc
-  return scored
-    .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
+  // Sort by score descending
+  const sorted = scored.sort((a, b) => b.score - a.score)
+
+  // Get relevant schemes (score > 0), at least 4
+  const relevant = sorted.filter((s) => s.score > 0)
+
+  // If we have fewer than 4, add top universal ones
+  if (relevant.length < 4) {
+    const universals = sorted.filter(
+      (s) => s.score <= 0 && (s.scheme.crops.includes("all") || s.scheme.farmSizes.includes("all"))
+    )
+    while (relevant.length < 4 && universals.length > 0) {
+      relevant.push(universals.shift()!)
+    }
+  }
+
+  // Return top 5 (or 6 if we have them)
+  return relevant
+    .slice(0, Math.min(6, Math.max(4, relevant.length)))
     .map((s) => s.scheme)
 }

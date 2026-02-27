@@ -31,6 +31,7 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
   const [messages, setMessages] = useState<Message[]>([])
   const [step, setStep] = useState<Step>("name")
   const [formData, setFormData] = useState<FormData>({ name: "", crop: "", farmSize: "" })
+  const formDataRef = useRef<FormData>({ name: "", crop: "", farmSize: "" })
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [textInput, setTextInput] = useState("")
@@ -88,7 +89,9 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
     setIsSpeaking(false)
 
     if (step === "name") {
-      setFormData(prev => ({ ...prev, name: trimmed }))
+      const updated = { ...formDataRef.current, name: trimmed }
+      formDataRef.current = updated
+      setFormData(updated)
       setStep("crop")
       const askCrop = lang === "te"
         ? `ధన్యవాదాలు ${trimmed}! మీరు ఏ పంట పండిస్తున్నారు? వరి, పత్తి, మిరప, వేరుశెనగ, చెరకు, మొక్కజొన్న, టమాట, పసుపు, లేదా మామిడి?`
@@ -98,7 +101,9 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
     } else if (step === "crop") {
       const crop = matchCrop(trimmed)
       if (crop) {
-        setFormData(prev => ({ ...prev, crop }))
+        const updated = { ...formDataRef.current, crop }
+        formDataRef.current = updated
+        setFormData(updated)
         setStep("size")
         const cropName = lang === "te" ? CROPS_TE[CROP_KEYS.indexOf(crop)] : CROPS_EN[CROP_KEYS.indexOf(crop)]
         const askSize = lang === "te"
@@ -115,14 +120,15 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
     } else if (step === "size") {
       const size = matchSize(trimmed)
       if (size) {
-        const updatedData = { ...formData, farmSize: size }
-        setFormData(updatedData)
+        const updated = { ...formDataRef.current, farmSize: size }
+        formDataRef.current = updated
+        setFormData(updated)
         setStep("confirm")
-        const cropName = lang === "te" ? CROPS_TE[CROP_KEYS.indexOf(formData.crop)] : CROPS_EN[CROP_KEYS.indexOf(formData.crop)]
+        const cropName = lang === "te" ? CROPS_TE[CROP_KEYS.indexOf(updated.crop)] : CROPS_EN[CROP_KEYS.indexOf(updated.crop)]
         const sizeName = lang === "te" ? SIZES_TE[SIZE_KEYS.indexOf(size)] : SIZES_EN[SIZE_KEYS.indexOf(size)]
         const confirm = lang === "te"
-          ? `మీ వివరాలు: పేరు - ${formData.name}, పంట - ${cropName}, పొలం - ${sizeName}. సరిగ్గా ఉందా? అవును అని చెప్పండి, లేదా మార్చాలంటే కాదు అని చెప్పండి.`
-          : `Your details: Name - ${formData.name}, Crop - ${cropName}, Farm Size - ${sizeName}. Is this correct? Say Yes to confirm, or No to start over.`
+          ? `మీ వివరాలు: పేరు - ${updated.name}, పంట - ${cropName}, పొలం - ${sizeName}. సరిగ్గా ఉందా? అవును అని చెప్పండి, లేదా మార్చాలంటే కాదు అని చెప్పండి.`
+          : `Your details: Name - ${updated.name}, Crop - ${cropName}, Farm Size - ${sizeName}. Is this correct? Say Yes to confirm, or No to start over.`
         setTimeout(() => addBotMessage(confirm), 400)
       } else {
         const retry = lang === "te"
@@ -140,10 +146,11 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
           : "Wonderful! Showing your eligible schemes now..."
         setTimeout(() => {
           addBotMessage(done)
-          setTimeout(() => onComplete(formData), 1500)
+          setTimeout(() => onComplete(formDataRef.current), 1500)
         }, 400)
       } else {
         setStep("name")
+        formDataRef.current = { name: "", crop: "", farmSize: "" }
         setFormData({ name: "", crop: "", farmSize: "" })
         const restart = lang === "te"
           ? "సరే, మళ్ళీ మొదలు పెడదాం. దయచేసి మీ పేరు చెప్పండి."
@@ -315,6 +322,7 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
         <button
           onClick={() => {
             setStep("name")
+            formDataRef.current = { name: "", crop: "", farmSize: "" }
             setFormData({ name: "", crop: "", farmSize: "" })
             setMessages([])
             const greeting = lang === "te"
