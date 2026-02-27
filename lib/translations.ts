@@ -2,6 +2,63 @@ export type Language = "en" | "te"
 
 export const translations = {
   en: {
+    // Brand
+    appName: "GramVikash",
+    appTagline: "Unified AI Rural Assistance Platform",
+    heroTitle: "Empowering Farmers with AI",
+    heroSubtitle: "Crop Health, Schemes & Assistance in One Platform",
+    heroDesc: "Voice-first rural assistance for every farmer. Get instant help with crop diseases, government schemes, and AI-powered guidance in Telugu and English.",
+
+    // Navigation
+    navHome: "Home",
+    navCropDisease: "Crop Disease",
+    navSchemes: "Govt Schemes",
+    navChat: "AI Chat",
+
+    // Home page features
+    featureCropTitle: "Crop Disease Detection",
+    featureCropDesc: "Upload a leaf image or capture from camera. Our AI identifies diseases instantly with treatment advice.",
+    featureSchemeTitle: "Government Schemes",
+    featureSchemeDesc: "Discover eligible schemes like PM Kisan and Rythu Bharosa with eligibility criteria and apply steps.",
+    featureChatTitle: "AI Chat Assistant",
+    featureChatDesc: "Ask any farming question by voice or text. Get instant answers in Telugu and English.",
+    featureVoiceTitle: "Voice First",
+    featureVoiceDesc: "Designed for voice interaction. Speak in Telugu or English and hear responses naturally.",
+    getStarted: "Get Started",
+    exploreSchemes: "Explore Schemes",
+    askAI: "Ask AI",
+
+    // Language
+    language: "Language",
+    english: "English",
+    telugu: "Telugu",
+
+    // Crop Disease Page
+    cropDiseaseTitle: "Crop Disease Detection",
+    cropDiseaseSubtitle: "Upload or capture a leaf image to detect diseases instantly",
+    uploadImage: "Upload Leaf Image",
+    captureCamera: "Capture from Camera",
+    predict: "Predict Disease",
+    analyzing: "Analyzing...",
+    diseaseName: "Disease Name",
+    confidence: "Confidence",
+    severity: "Severity",
+    prevention: "Prevention",
+    treatment: "Treatment",
+    severityLow: "Low",
+    severityMedium: "Medium",
+    severityHigh: "High",
+    noImageSelected: "Please upload or capture an image first",
+    dragDrop: "Drag & drop a leaf image here, or click to browse",
+    supported: "Supports JPG, PNG, WEBP",
+    resultReady: "Prediction Result",
+    speakingResult: "Speaking result...",
+    listenResult: "Listen to Result",
+    healthyLeaf: "Healthy Leaf",
+    healthyDesc: "Your crop leaf appears healthy. No disease detected.",
+    retake: "Analyze Another",
+
+    // Schemes Page (existing)
     appTitle: "Farmer Voice Scheme Assistant",
     appSubtitle: "Discover government schemes with your voice",
     farmerName: "Farmer Name",
@@ -38,28 +95,19 @@ export const translations = {
     notUnderstood: "Sorry, I didn't understand. Please try asking about PM Kisan or Rythu Bharosa, their eligibility, or how to apply.",
     you: "You",
     assistant: "Assistant",
-    language: "Language",
-    english: "English",
-    telugu: "Telugu",
     annual: "Annual",
     perYear: "/ year",
     rs6000: "Rs. 6,000",
     rs13500: "Rs. 13,500",
-
-    // Eligibility & Apply
     eligibility: "Eligibility Criteria",
     howToApply: "How to Apply",
     applyNow: "Apply Now",
     applyOnline: "Apply Online",
-
-    // PM Kisan eligibility
     pmKisanElig1: "All landholding farmer families with cultivable land",
     pmKisanElig2: "Family includes husband, wife, and minor children",
     pmKisanElig3: "Institutional landholders are NOT eligible",
     pmKisanElig4: "Income tax payers and government employees are excluded",
     pmKisanElig5: "Must have Aadhaar card linked with bank account",
-
-    // PM Kisan apply steps
     pmKisanApply1: "Visit the official PM Kisan website: pmkisan.gov.in",
     pmKisanApply2: "Click on 'New Farmer Registration' on the home page",
     pmKisanApply3: "Select your state and enter your Aadhaar number",
@@ -67,15 +115,11 @@ export const translations = {
     pmKisanApply5: "Upload land ownership documents and Aadhaar card",
     pmKisanApply6: "Submit the form and note down the registration number",
     pmKisanApplyLink: "https://pmkisan.gov.in",
-
-    // Rythu Bharosa eligibility
     rythuElig1: "Must be a resident farmer of Andhra Pradesh",
     rythuElig2: "Should own cultivable agricultural land",
     rythuElig3: "Land records must be updated in the state portal (Webland)",
     rythuElig4: "Aadhaar-linked bank account is mandatory",
     rythuElig5: "Tenant farmers with valid tenancy agreement are also eligible",
-
-    // Rythu Bharosa apply steps
     rythuApply1: "Visit the nearest Meeseva center or Village Secretariat",
     rythuApply2: "Carry Aadhaar card, land passbook (pattadar passbook), and bank passbook",
     rythuApply3: "Fill the application form at the center",
@@ -83,21 +127,83 @@ export const translations = {
     rythuApply5: "Once verified, your name will be added to the beneficiary list",
     rythuApply6: "You can also check status online at ysrrythubharosa.ap.gov.in",
     rythuApplyLink: "https://ysrrythubharosa.ap.gov.in",
-
-    // Documents required
     docsRequired: "Documents Required",
     aadhaarCard: "Aadhaar Card",
     bankPassbook: "Bank Passbook (linked to Aadhaar)",
     landDocs: "Land Ownership Documents / Pattadar Passbook",
     rationCard: "Ration Card (if available)",
-
-    // Voice responses for eligibility & apply
     pmKisanEligReply: "To be eligible for PM Kisan, you must be a landholding farmer family. Your Aadhaar must be linked to your bank account. Income tax payers and government employees are not eligible.",
     pmKisanApplyReply: "To apply for PM Kisan, visit pmkisan.gov.in website. Click New Farmer Registration. Enter your Aadhaar number, fill your details, upload land documents, and submit the form.",
     rythuEligReply: "For Rythu Bharosa, you must be a resident farmer of Andhra Pradesh with cultivable land. Your land records must be updated in the state portal, and you need an Aadhaar-linked bank account.",
     rythuApplyReply: "To apply for Rythu Bharosa, visit your nearest Meeseva center or Village Secretariat. Carry your Aadhaar card, land passbook, and bank passbook. Fill the form and submit documents for verification.",
+
+    // AI Chat
+    chatTitle: "AI Chat Assistant",
+    chatSubtitle: "Ask any farming question by voice or text",
+    chatPlaceholder: "Type your farming question here...",
+    sendMessage: "Send",
+    chatWelcome: "Hello! I am your AI farming assistant. Ask me anything about crops, diseases, weather, or government schemes. You can type or use the microphone to speak.",
+    thinking: "Thinking...",
+    speaking: "Speaking...",
   },
   te: {
+    // Brand
+    appName: "గ్రామ్ వికాశ్",
+    appTagline: "ఏకీకృత AI గ్రామీణ సహాయ వేదిక",
+    heroTitle: "AI తో రైతులకు శక్తి",
+    heroSubtitle: "పంట ఆరోగ్యం, పథకాలు & సహాయం ఒకే వేదికలో",
+    heroDesc: "ప్రతి రైతు కోసం వాయిస్-ఫస్ట్ గ్రామీణ సహాయం. పంట వ్యాధులు, ప్రభుత్వ పథకాలు మరియు AI మార్గదర్శకత్వం తెలుగు మరియు ఆంగ్లంలో తక్షణ సహాయం పొందండి.",
+
+    // Navigation
+    navHome: "హోమ్",
+    navCropDisease: "పంట వ్యాధి",
+    navSchemes: "ప్రభుత్వ పథకాలు",
+    navChat: "AI చాట్",
+
+    // Home page features
+    featureCropTitle: "పంట వ్యాధి గుర్తింపు",
+    featureCropDesc: "ఆకు చిత్రాన్ని అప్‌లోడ్ చేయండి లేదా కెమెరాతో తీయండి. మా AI వ్యాధులను చికిత్స సలహాతో తక్షణంగా గుర్తిస్తుంది.",
+    featureSchemeTitle: "ప్రభుత్వ పథకాలు",
+    featureSchemeDesc: "పీఎం కిసాన్ మరియు రైతు భరోసా వంటి అర్హత పథకాలను అర్హత ప్రమాణాలు మరియు దరఖాస్తు దశలతో తెలుసుకోండి.",
+    featureChatTitle: "AI చాట్ అసిస్టెంట్",
+    featureChatDesc: "వాయిస్ లేదా టెక్స్ట్ ద్వారా ఏదైనా వ్యవసాయ ప్రశ్న అడగండి. తెలుగు మరియు ఆంగ్లంలో తక్షణ సమాధానాలు పొందండి.",
+    featureVoiceTitle: "వాయిస్ ఫస్ట్",
+    featureVoiceDesc: "వాయిస్ ఇంటరాక్షన్ కోసం రూపొందించబడింది. తెలుగు లేదా ఆంగ్లంలో మాట్లాడండి మరియు సహజంగా సమాధానాలు వినండి.",
+    getStarted: "ప్రారంభించండి",
+    exploreSchemes: "పథకాలు చూడండి",
+    askAI: "AI ని అడగండి",
+
+    // Language
+    language: "భాష",
+    english: "ఆంగ్లం",
+    telugu: "తెలుగు",
+
+    // Crop Disease Page
+    cropDiseaseTitle: "పంట వ్యాధి గుర్తింపు",
+    cropDiseaseSubtitle: "వ్యాధులను తక్షణంగా గుర్తించడానికి ఆకు చిత్రాన్ని అప్‌లోడ్ చేయండి లేదా తీయండి",
+    uploadImage: "ఆకు చిత్రం అప్‌లోడ్",
+    captureCamera: "కెమెరాతో తీయండి",
+    predict: "వ్యాధి గుర్తించండి",
+    analyzing: "విశ్లేషిస్తోంది...",
+    diseaseName: "వ్యాధి పేరు",
+    confidence: "విశ్వసనీయత",
+    severity: "తీవ్రత",
+    prevention: "నివారణ",
+    treatment: "చికిత్స",
+    severityLow: "తక్కువ",
+    severityMedium: "మధ్యస్థం",
+    severityHigh: "ఎక్కువ",
+    noImageSelected: "దయచేసి ముందుగా చిత్రాన్ని అప్‌లోడ్ చేయండి లేదా తీయండి",
+    dragDrop: "ఆకు చిత్రాన్ని ఇక్కడ డ్రాగ్ & డ్రాప్ చేయండి, లేదా బ్రౌజ్ చేయడానికి క్లిక్ చేయండి",
+    supported: "JPG, PNG, WEBP మద్దతు",
+    resultReady: "అంచనా ఫలితం",
+    speakingResult: "ఫలితం చెబుతోంది...",
+    listenResult: "ఫలితం వినండి",
+    healthyLeaf: "ఆరోగ్యకరమైన ఆకు",
+    healthyDesc: "మీ పంట ఆకు ఆరోగ్యంగా కనిపిస్తోంది. వ్యాధి కనుగొనబడలేదు.",
+    retake: "మరొకటి విశ్లేషించండి",
+
+    // Schemes Page
     appTitle: "రైతు వాయిస్ స్కీమ్ అసిస్టెంట్",
     appSubtitle: "మీ గొంతుతో ప్రభుత్వ పథకాలను తెలుసుకోండి",
     farmerName: "రైతు పేరు",
@@ -134,28 +240,19 @@ export const translations = {
     notUnderstood: "క్షమించండి, నాకు అర్థం కాలేదు. దయచేసి పీఎం కిసాన్ లేదా రైతు భరోసా గురించి, వాటి అర్హత లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి.",
     you: "మీరు",
     assistant: "అసిస్టెంట్",
-    language: "భాష",
-    english: "ఆంగ్లం",
-    telugu: "తెలుగు",
     annual: "వార్షికం",
     perYear: "/ సంవత్సరం",
     rs6000: "రూ. 6,000",
     rs13500: "రూ. 13,500",
-
-    // Eligibility & Apply
     eligibility: "అర్హత ప్రమాణాలు",
     howToApply: "దరఖాస్తు ఎలా చేయాలి",
     applyNow: "ఇప్పుడు దరఖాస్తు చేయండి",
     applyOnline: "ఆన్‌లైన్‌లో దరఖాస్తు చేయండి",
-
-    // PM Kisan eligibility
     pmKisanElig1: "సాగు భూమి ఉన్న అన్ని రైతు కుటుంబాలు",
     pmKisanElig2: "కుటుంబం అంటే భర్త, భార్య మరియు మైనర్ పిల్లలు",
     pmKisanElig3: "సంస్థాగత భూ యజమానులు అర్హులు కారు",
     pmKisanElig4: "ఆదాయపు పన్ను చెల్లింపుదారులు మరియు ప్రభుత్వ ఉద్యోగులు మినహాయింపు",
     pmKisanElig5: "బ్యాంకు ఖాతాతో లింక్ చేసిన ఆధార్ కార్డు తప్పనిసరి",
-
-    // PM Kisan apply steps
     pmKisanApply1: "అధికారిక వెబ్‌సైట్ pmkisan.gov.in కు వెళ్ళండి",
     pmKisanApply2: "హోమ్ పేజీలో 'కొత్త రైతు నమోదు' పై క్లిక్ చేయండి",
     pmKisanApply3: "మీ రాష్ట్రం ఎంచుకోండి, ఆధార్ నంబర్ నమోదు చేయండి",
@@ -163,15 +260,11 @@ export const translations = {
     pmKisanApply5: "భూమి యాజమాన్య పత్రాలు మరియు ఆధార్ కార్డు అప్‌లోడ్ చేయండి",
     pmKisanApply6: "ఫారమ్ సబ్మిట్ చేసి, రిజిస్ట్రేషన్ నంబర్ నోట్ చేసుకోండి",
     pmKisanApplyLink: "https://pmkisan.gov.in",
-
-    // Rythu Bharosa eligibility
     rythuElig1: "ఆంధ్రప్రదేశ్ నివాసి రైతుగా ఉండాలి",
     rythuElig2: "సాగు భూమి కలిగి ఉండాలి",
     rythuElig3: "భూమి రికార్డులు రాష్ట్ర పోర్టల్‌లో (వెబ్‌ల్యాండ్) నవీకరించబడి ఉండాలి",
     rythuElig4: "ఆధార్‌తో లింక్ చేసిన బ్యాంకు ఖాతా తప్పనిసరి",
     rythuElig5: "చెల్లుబాటు అయ్యే కౌలు ఒప్పందం ఉన్న కౌలు రైతులు కూడా అర్హులే",
-
-    // Rythu Bharosa apply steps
     rythuApply1: "సమీపంలోని మీసేవ కేంద్రం లేదా గ్రామ సచివాలయానికి వెళ్ళండి",
     rythuApply2: "ఆధార్ కార్డు, భూమి పాస్‌బుక్ (పట్టాదార్ పాస్‌బుక్), బ్యాంకు పాస్‌బుక్ తీసుకెళ్ళండి",
     rythuApply3: "కేంద్రంలో దరఖాస్తు ఫారమ్ నింపండి",
@@ -179,18 +272,23 @@ export const translations = {
     rythuApply5: "ధృవీకరణ తర్వాత, మీ పేరు లబ్ధిదారుల జాబితాలో చేర్చబడుతుంది",
     rythuApply6: "ysrrythubharosa.ap.gov.in లో ఆన్‌లైన్‌లో స్థితి తనిఖీ చేయవచ్చు",
     rythuApplyLink: "https://ysrrythubharosa.ap.gov.in",
-
-    // Documents required
     docsRequired: "అవసరమైన పత్రాలు",
     aadhaarCard: "ఆధార్ కార్డు",
     bankPassbook: "బ్యాంకు పాస్‌బుక్ (ఆధార్‌తో లింక్)",
     landDocs: "భూమి యాజమాన్య పత్రాలు / పట్టాదార్ పాస్‌బుక్",
     rationCard: "రేషన్ కార్డు (అందుబాటులో ఉంటే)",
-
-    // Voice responses
     pmKisanEligReply: "పీఎం కిసాన్ అర్హత కోసం, మీరు సాగు భూమి ఉన్న రైతు కుటుంబంగా ఉండాలి. ఆధార్ బ్యాంకు ఖాతాతో లింక్ చేయాలి. ఆదాయపు పన్ను చెల్లింపుదారులు, ప్రభుత్వ ఉద్యోగులు అర్హులు కారు.",
     pmKisanApplyReply: "పీఎం కిసాన్ కోసం దరఖాస్తు చేయడానికి, pmkisan.gov.in వెబ్‌సైట్‌కు వెళ్ళండి. కొత్త రైతు నమోదు పై క్లిక్ చేయండి. ఆధార్ నంబర్ నమోదు చేసి, వ్యక్తిగత వివరాలు నింపి, భూమి పత్రాలు అప్‌లోడ్ చేసి, ఫారమ్ సబ్మిట్ చేయండి.",
     rythuEligReply: "రైతు భరోసా కోసం, మీరు ఆంధ్రప్రదేశ్ నివాసి రైతుగా ఉండాలి. సాగు భూమి ఉండాలి. భూమి రికార్డులు రాష్ట్ర పోర్టల్‌లో నవీకరించబడి ఉండాలి. ఆధార్‌తో లింక్ చేసిన బ్యాంకు ఖాతా తప్పనిసరి.",
     rythuApplyReply: "రైతు భరోసా కోసం దరఖాస్తు చేయడానికి, సమీపంలోని మీసేవ కేంద్రం లేదా గ్రామ సచివాలయానికి వెళ్ళండి. ఆధార్ కార్డు, భూమి పాస్‌బుక్, బ్యాంకు పాస్‌బుక్ తీసుకెళ్ళండి. దరఖాస్తు ఫారమ్ నింపి, పత్రాలు ధృవీకరణ కోసం సబ్మిట్ చేయండి.",
+
+    // AI Chat
+    chatTitle: "AI చాట్ అసిస్టెంట్",
+    chatSubtitle: "వాయిస్ లేదా టెక్స్ట్ ద్వారా ఏదైనా వ్యవసాయ ప్రశ్న అడగండి",
+    chatPlaceholder: "మీ వ్యవసాయ ప్రశ్నను ఇక్కడ టైప్ చేయండి...",
+    sendMessage: "పంపండి",
+    chatWelcome: "నమస్కారం! నేను మీ AI వ్యవసాయ అసిస్టెంట్ని. పంటలు, వ్యాధులు, వాతావరణం లేదా ప్రభుత్వ పథకాల గురించి ఏదైనా అడగండి. మీరు టైప్ చేయవచ్చు లేదా మైక్రోఫోన్ వాడి మాట్లాడవచ్చు.",
+    thinking: "ఆలోచిస్తోంది...",
+    speaking: "మాట్లాడుతోంది...",
   },
 } as const
