@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useLanguage } from "@/lib/language-context"
-import { Leaf, Shield, MessageCircle, Mic, ArrowRight, Sprout, HeartPulse } from "lucide-react"
+import { Leaf, Shield, MessageCircle, Mic, ArrowRight, Sprout, HeartPulse, Siren } from "lucide-react"
 
 function FeatureCard({
   icon: Icon,
@@ -134,12 +134,12 @@ export default function HomePage() {
           accentClass="bg-primary/15 text-primary"
         />
         <FeatureCard
-          icon={Mic}
-          title={t.featureVoiceTitle}
-          description={t.featureVoiceDesc}
-          href="/chat"
-          cta={t.askAI}
-          accentClass="bg-accent/15 text-accent"
+          icon={Siren}
+          title={t.navEmergency}
+          description={lang === "te" ? "అత్యవసర పరిస్థితుల్లో తక్షణ సహాయం కోసం SOS అలర్ట్ పంపండి. GPS లొకేషన్ తో సమీప సహాయకులకు తెలియజేస్తుంది." : "Send SOS alerts for immediate help in emergencies. Notifies nearby helpers with your GPS location."}
+          href="/emergency"
+          cta={t.navEmergency}
+          accentClass="bg-red-100 text-red-600"
         />
       </section>
     </div>

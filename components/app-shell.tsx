@@ -3,6 +3,7 @@
 import { LanguageProvider } from "@/lib/language-context"
 import { NavBar } from "./nav-bar"
 import { VoiceAssistant } from "./voice-assistant"
+import { SosFloatingButton } from "./sos-floating-button"
 import type { ReactNode } from "react"
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <NavBar />
         <main className="flex-1">{children}</main>
+        <SosFloatingButton />
         <VoiceAssistant />
       </div>
     </LanguageProvider>

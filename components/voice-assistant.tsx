@@ -434,7 +434,7 @@ export function VoiceAssistant() {
       {/* Floating mic button */}
       <button
         onClick={handleOpen}
-        className={`fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
+        className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
           !isOpen ? "animate-bounce" : "opacity-0 pointer-events-none"
         }`}
         style={{
