@@ -38,7 +38,7 @@ function FeatureCard({
 }
 
 export default function HomePage() {
-  const { t } = useLanguage()
+  const { lang, t } = useLanguage()
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 sm:py-16">
@@ -136,7 +136,7 @@ export default function HomePage() {
         <FeatureCard
           icon={Siren}
           title={t.navEmergency}
-          description={lang === "te" ? "అత్యవసర పరిస్థితుల్లో తక్షణ సహాయం కోసం SOS అలర్ట్ పంపండి. GPS లొకేషన్ తో సమీప సహాయకులకు తెలియజేస్తుంది." : "Send SOS alerts for immediate help in emergencies. Notifies nearby helpers with your GPS location."}
+          description={t.sosSubtitle}
           href="/emergency"
           cta={t.navEmergency}
           accentClass="bg-red-100 text-red-600"

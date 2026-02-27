@@ -186,6 +186,9 @@ export function speak(
   onStart: () => void,
   onEnd: () => void
 ) {
+  if (typeof window === "undefined") { onEnd(); return }
+  if (!text || text.trim().length === 0) { onEnd(); return }
+
   stopSpeaking()
   abortChain = false
 
@@ -196,8 +199,10 @@ export function speak(
     // Telugu: Always use API proxy for best quality
     currentAudio = speakWithTTSAPI(text, langCode, onStart, onEnd)
   } else {
-    // English: Try browser TTS first
-    const voices = window.speechSynthesis?.getVoices() || []
+    // English: Try browser TTS first, then API
+    const voices = typeof window !== "undefined" && window.speechSynthesis
+      ? window.speechSynthesis.getVoices()
+      : []
     const hasEnglish = voices.some((v) => v.lang.startsWith("en"))
     if (hasEnglish) {
       speakWithBrowserTTS(text, fullLangCode, onStart, onEnd)
