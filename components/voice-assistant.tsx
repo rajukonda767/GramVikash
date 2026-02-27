@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useLanguage } from "@/lib/language-context"
+import { speak, stopSpeaking as stopTTS, initVoices } from "@/lib/tts"
 import { Mic, X, Volume2, Square } from "lucide-react"
 
 type Message = {
@@ -38,131 +39,6 @@ function VoiceWave({ active }: { active: boolean }) {
   )
 }
 
-/**
- * Speaks text using our server-side TTS API (proxies Google Translate TTS).
- * This avoids CORS issues since we proxy through our own API route.
- * Falls back to direct Google TTS, then browser SpeechSynthesis.
- */
-function speakWithTTS(
-  text: string,
-  langCode: string,
-  onStart: () => void,
-  onEnd: () => void
-): HTMLAudioElement | null {
-  // TTS has a ~200 char limit per request, so chunk if needed
-  const maxLen = 180
-  const chunks: string[] = []
-  let remaining = text
-  while (remaining.length > 0) {
-    if (remaining.length <= maxLen) {
-      chunks.push(remaining)
-      break
-    }
-    let breakIdx = remaining.lastIndexOf(".", maxLen)
-    if (breakIdx < 20) breakIdx = remaining.lastIndexOf(" ", maxLen)
-    if (breakIdx < 20) breakIdx = maxLen
-    chunks.push(remaining.substring(0, breakIdx + 1))
-    remaining = remaining.substring(breakIdx + 1).trim()
-  }
-
-  let currentIdx = 0
-  let currentAudio: HTMLAudioElement | null = null
-
-  const browserFallback = (text: string, andThen: () => void) => {
-    const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-    speakWithBrowserTTS(text, fullLang, () => {}, andThen)
-  }
-
-  const playChunkWithFallbacks = () => {
-    if (currentIdx >= chunks.length) {
-      onEnd()
-      return
-    }
-
-    const chunkText = chunks[currentIdx]
-    if (currentIdx === 0) onStart()
-
-    const advanceNext = () => {
-      currentIdx++
-      playChunkWithFallbacks()
-    }
-
-    // Strategy 1: Our own API route (server-side proxy, no CORS)
-    const apiUrl = `/api/tts?text=${encodeURIComponent(chunkText)}&lang=${langCode}`
-    const audio = new Audio(apiUrl)
-    audio.preload = "auto"
-    currentAudio = audio
-
-    audio.onended = advanceNext
-
-    audio.onerror = () => {
-      browserFallback(chunkText, advanceNext)
-    }
-
-    // Set a timeout: if audio doesn't load in 3s, fall back to browser TTS
-    const loadTimeout = setTimeout(() => {
-      if (audio && audio.readyState < 3) {
-        audio.oncanplaythrough = null
-        audio.onerror = null
-        audio.onended = null
-        browserFallback(chunkText, advanceNext)
-      }
-    }, 3000)
-
-    // Wait for audio data to fully load before playing
-    audio.oncanplaythrough = () => {
-      clearTimeout(loadTimeout)
-      audio.play().catch(() => {
-        browserFallback(chunkText, advanceNext)
-      })
-    }
-
-    // Start loading
-    audio.load()
-  }
-
-  playChunkWithFallbacks()
-  return currentAudio
-}
-
-/**
- * Browser SpeechSynthesis fallback
- */
-function speakWithBrowserTTS(
-  text: string,
-  langCode: string,
-  onStart: () => void,
-  onEnd: () => void
-) {
-  if (!("speechSynthesis" in window)) {
-    onEnd()
-    return
-  }
-  window.speechSynthesis.cancel()
-
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = langCode
-  utterance.rate = 0.92
-  utterance.pitch = 1.05
-  utterance.volume = 1
-
-  // Find best voice: prefer Google Chirp3-HD-Aoede for Telugu fluency
-  const voices = window.speechSynthesis.getVoices()
-  const prefix = langCode.split("-")[0]
-  const voice =
-    voices.find((v) => v.name.includes("Chirp3-HD-Aoede") && v.lang.startsWith(prefix)) ||
-    voices.find((v) => v.name.includes("Chirp3") && v.lang.startsWith(prefix)) ||
-    voices.find((v) => v.name.toLowerCase().includes("google") && v.lang.startsWith(prefix)) ||
-    voices.find((v) => v.lang === langCode) ||
-    voices.find((v) => v.lang.startsWith(prefix))
-  if (voice) utterance.voice = voice
-
-  utterance.onstart = onStart
-  utterance.onend = onEnd
-  utterance.onerror = onEnd
-  window.speechSynthesis.speak(utterance)
-}
-
 export function VoiceAssistant() {
   const { lang, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
@@ -178,65 +54,18 @@ export function VoiceAssistant() {
   }, [messages])
 
   // Pre-load voices
-  useEffect(() => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.getVoices()
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices()
-      }
-    }
-  }, [])
+  useEffect(() => { initVoices() }, [])
 
   const speakText = useCallback(
     (text: string) => {
-      // Stop any ongoing speech
-      window.speechSynthesis?.cancel()
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current = null
-      }
-
-      const langCode = lang === "te" ? "te" : "en"
-      const fullLangCode = lang === "te" ? "te-IN" : "en-IN"
-
-      // For Telugu, always use our TTS API (Google Translate proxy - best Telugu quality)
-      // For English, try browser TTS first, then TTS API as fallback
-      if (lang === "te") {
-        audioRef.current = speakWithTTS(
-          text,
-          langCode,
-          () => setIsSpeaking(true),
-          () => setIsSpeaking(false)
-        )
-      } else {
-        const voices = window.speechSynthesis?.getVoices() || []
-        const hasEnglish = voices.some((v) => v.lang.startsWith("en"))
-        if (hasEnglish) {
-          speakWithBrowserTTS(
-            text,
-            fullLangCode,
-            () => setIsSpeaking(true),
-            () => setIsSpeaking(false)
-          )
-        } else {
-          audioRef.current = speakWithTTS(
-            text,
-            langCode,
-            () => setIsSpeaking(true),
-            () => setIsSpeaking(false)
-          )
-        }
-      }
+      stopTTS()
+      speak(text, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
     },
     [lang]
   )
 
   const stopSpeaking = useCallback(() => {
-    window.speechSynthesis?.cancel()
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current = null
-    }
+    stopTTS()
     setIsSpeaking(false)
   }, [])
 
@@ -334,7 +163,7 @@ export function VoiceAssistant() {
       }
       if (isApplyQ) {
         return lang === "te"
-          ? "ఏ పథకానికి దరఖాస్తు చేయాలో చెప్పండి. పీఎం కిసాన్, ఫసల్ బీమా, KCC, రైతు భరోసా వంటి పథకాలకు దరఖాస్తు ప్రక్రియ చెప్పగలను."
+          ? "ఏ పథకాన���కి దరఖాస్తు చేయాలో చెప్పండి. పీఎం కిసాన్, ఫసల్ బీమా, KCC, రైతు భరోసా వంటి పథకాలకు దరఖాస్తు ప్రక్రియ చెప్పగలను."
           : "Please specify which scheme to apply for. I can guide you for PM Kisan, Fasal Bima, KCC, Rythu Bharosa, and more."
       }
 

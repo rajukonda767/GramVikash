@@ -95,6 +95,7 @@ export default function WeatherPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isTipSpeaking, setIsTipSpeaking] = useState(false)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   const fetchData = useCallback(async (lat?: number, lng?: number) => {
@@ -144,6 +145,9 @@ export default function WeatherPage() {
       setIsSpeaking(false)
       return
     }
+    // Stop tip speaking first
+    stopSpeaking()
+    setIsTipSpeaking(false)
     const c = weather.current
     const condition = weatherCodeToDescription(c.weatherCode, lang)
     const tip = getFarmTip(weather, lang)
@@ -278,23 +282,26 @@ export default function WeatherPage() {
               <button
                 onClick={() => {
                   if (!weather) return
-                  if (isSpeaking) {
+                  if (isTipSpeaking) {
                     stopSpeaking()
-                    setIsSpeaking(false)
+                    setIsTipSpeaking(false)
                     return
                   }
+                  // Stop any overall weather speaking first
+                  stopSpeaking()
+                  setIsSpeaking(false)
                   const tip = getFarmTip(weather, lang)
                   const intro = lang === "te" ? "వ్యవసాయ సూచన: " : "Farm tip: "
-                  speak(intro + tip, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
+                  speak(intro + tip, lang, () => setIsTipSpeaking(true), () => setIsTipSpeaking(false))
                 }}
                 className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all ${
-                  isSpeaking
+                  isTipSpeaking
                     ? "bg-green-600 text-white"
                     : "bg-green-200 text-green-700 hover:bg-green-300"
                 }`}
                 aria-label={lang === "te" ? "సూచన వినండి" : "Listen to tip"}
               >
-                <Volume2 className={`h-4 w-4 ${isSpeaking ? "animate-pulse" : ""}`} />
+                <Volume2 className={`h-4 w-4 ${isTipSpeaking ? "animate-pulse" : ""}`} />
               </button>
             </div>
             <p className="text-sm text-green-700 leading-relaxed">{getFarmTip(weather, lang)}</p>
