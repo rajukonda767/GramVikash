@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
 import { LanguageToggle } from "./language-toggle"
-import { Home, Leaf, Shield, MessageCircle, Sprout, Menu, X, Siren } from "lucide-react"
+import { Home, Leaf, Shield, MessageCircle, Sprout, Menu, X } from "lucide-react"
 import { useState } from "react"
 
 export function NavBar() {
@@ -17,7 +17,6 @@ export function NavBar() {
     { href: "/crop-disease", label: t.navCropDisease, icon: Leaf },
     { href: "/schemes", label: t.navSchemes, icon: Shield },
     { href: "/chat", label: t.navChat, icon: MessageCircle },
-    { href: "/emergency", label: t.navEmergency, icon: Siren, emergency: true },
   ]
 
   return (
@@ -38,19 +37,14 @@ export function NavBar() {
           <div className="hidden md:flex items-center gap-1">
             {links.map((link) => {
               const isActive = pathname === link.href
-              const isEmergency = "emergency" in link && link.emergency
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                    isEmergency
-                      ? isActive
-                        ? "bg-red-600 text-white shadow-sm"
-                        : "text-red-600 hover:bg-red-50 hover:text-red-700"
-                      : isActive
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   <link.icon className="h-4 w-4" />
@@ -79,20 +73,15 @@ export function NavBar() {
             <div className="flex flex-col gap-1">
               {links.map((link) => {
                 const isActive = pathname === link.href
-                const isEmergency = "emergency" in link && link.emergency
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      isEmergency
-                        ? isActive
-                          ? "bg-red-600 text-white shadow-sm"
-                          : "text-red-600 hover:bg-red-50 hover:text-red-700"
-                        : isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                   >
                     <link.icon className="h-5 w-5" />
