@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useLanguage } from "@/lib/language-context"
-import { Leaf, Shield, MessageCircle, Mic, ArrowRight, Sprout, HeartPulse, Siren } from "lucide-react"
+import { Leaf, Shield, MessageCircle, Mic, ArrowRight, Sprout, HeartPulse, Siren, CloudSun } from "lucide-react"
 
 function FeatureCard({
   icon: Icon,
@@ -108,7 +108,7 @@ export default function HomePage() {
       </section>
 
       {/* Feature Cards */}
-      <section className="grid sm:grid-cols-2 gap-6">
+      <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <FeatureCard
           icon={Leaf}
           title={t.featureCropTitle}
@@ -124,6 +124,14 @@ export default function HomePage() {
           href="/schemes"
           cta={t.exploreSchemes}
           accentClass="bg-accent/15 text-accent"
+        />
+        <FeatureCard
+          icon={CloudSun}
+          title={t.weatherTitle}
+          description={t.weatherSubtitle}
+          href="/weather"
+          cta={t.navWeather}
+          accentClass="bg-sky-100 text-sky-600"
         />
         <FeatureCard
           icon={MessageCircle}

@@ -1,5 +1,6 @@
 import { convertToModelMessages, streamText, UIMessage } from "ai"
 import { createGroq } from "@ai-sdk/groq"
+import { fetchWeather, weatherToSummary } from "@/lib/weather"
 
 export const maxDuration = 30
 
@@ -8,8 +9,17 @@ const groq = createGroq({
 })
 
 export async function POST(req: Request) {
-  const lang = req.headers.get("x-lang") || "en"
+  const lang = (req.headers.get("x-lang") || "en") as "en" | "te"
   const { messages }: { messages: UIMessage[] } = await req.json()
+
+  // Fetch live weather data to inject into system prompt
+  let weatherInfo = ""
+  try {
+    const weather = await fetchWeather()
+    weatherInfo = weatherToSummary(weather, lang)
+  } catch {
+    weatherInfo = lang === "te" ? "వాతావరణ డేటా అందుబాటులో లేదు." : "Weather data not available."
+  }
 
   const systemPrompt =
     lang === "te"
@@ -23,10 +33,11 @@ export async function POST(req: Request) {
 5. ప్రతి సమాధానం 3-5 వాక్యాల్లో ఉండాలి. ఎక్కువ రాయకు
 
 ## వాతావరణం అడిగితే:
-- నీకు నిజమైన వాతావరణ డేటా లేదు అని ముందు చెప్పు
-- తర్వాత సీజన్ ఆధారంగా సాధారణ సలహా ఇవ్వు
-- ఉదాహరణ: "నాకు లైవ్ వాతావరణ డేటా అందుబాటులో లేదు. ప్రస్తుతం రబీ సీజన్ కాబట్టి, ఉష్ణోగ్రతలు 20-30°C ఉంటాయి. పంట నీటి నిర్వహణ జాగ్రత్తగా చేయండి."
-- "ఎండగా ఉంటుంది" లేదా "వర్షం పడుతుంది" అని స్పష్టంగా చెప్పు, కవిత్వం వద్దు
+- ఈ కింది లైవ్ వాతావరణ డేటా వాడు:
+${weatherInfo}
+- ఈ డేటా ఆధారంగా స్పష్టంగా చెప్పు: "ఉష్ణోగ్రత X°C, వర్షం Y mm" లాగా
+- వ్యవసాయ సలహా కూడా ఇవ్వు (ఎప్పుడు నీరు ఇవ్వాలి, తెగుళ్ళ జాగ్రత్తలు)
+- కవిత్వం వద్దు, నంబర్లతో చెప్పు
 
 ## పంట సలహా అడిగితే:
 - విత్తనం, ఎరువు, నీరు, తెగుళ్ళు - ప్రాక్టికల్ పాయింట్లు ఇవ్వు
@@ -50,10 +61,11 @@ export async function POST(req: Request) {
 5. Keep every answer to 3-5 sentences max. Be concise
 
 ## When asked about WEATHER:
-- State clearly that you don't have live weather data
-- Then give season-based general advice
-- Example: "I don't have live weather data. Currently it's Rabi season (Oct-Mar), so expect temperatures around 20-30°C in AP/Telangana. Plan irrigation accordingly."
-- Say "sunny" or "rainy" clearly. NO poetic descriptions
+- Use this LIVE weather data:
+${weatherInfo}
+- Give a direct answer using the data: "Temperature is X°C, no rain today" etc.
+- Add farming advice based on the weather (irrigation timing, pest warnings)
+- NO poetry, give numbers only
 
 ## When asked about CROPS:
 - Give practical points: seed variety, fertilizer dose, water schedule, pest control

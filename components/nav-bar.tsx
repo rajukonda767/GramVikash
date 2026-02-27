@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
 import { LanguageToggle } from "./language-toggle"
-import { Home, Leaf, Shield, MessageCircle, Sprout, Menu, X } from "lucide-react"
+import { Home, Leaf, Shield, MessageCircle, Sprout, Menu, X, CloudSun } from "lucide-react"
 import { useState } from "react"
 
 export function NavBar() {
@@ -16,6 +16,7 @@ export function NavBar() {
     { href: "/", label: t.navHome, icon: Home },
     { href: "/crop-disease", label: t.navCropDisease, icon: Leaf },
     { href: "/schemes", label: t.navSchemes, icon: Shield },
+    { href: "/weather", label: t.navWeather, icon: CloudSun },
     { href: "/chat", label: t.navChat, icon: MessageCircle },
   ]
 
