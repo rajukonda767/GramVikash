@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/language-context"
 import { speak, stopSpeaking } from "@/lib/tts"
 import { Mic, Volume2, Send, User, Bot, CheckCircle2, RotateCcw } from "lucide-react"
 
-type FormData = {
+export type FormData = {
   name: string
   crop: string
   farmSize: string

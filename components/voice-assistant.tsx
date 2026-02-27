@@ -147,13 +147,15 @@ function speakWithBrowserTTS(
   utterance.pitch = 1
   utterance.volume = 1
 
-  // Try to find a matching voice
+  // Find best voice: prefer Google Chirp3-HD-Aoede for Telugu fluency
   const voices = window.speechSynthesis.getVoices()
   const prefix = langCode.split("-")[0]
   const voice =
+    voices.find((v) => v.name.includes("Chirp3-HD-Aoede") && v.lang.startsWith(prefix)) ||
+    voices.find((v) => v.name.includes("Chirp3") && v.lang.startsWith(prefix)) ||
+    voices.find((v) => v.name.toLowerCase().includes("google") && v.lang.startsWith(prefix)) ||
     voices.find((v) => v.lang === langCode) ||
-    voices.find((v) => v.lang.startsWith(prefix)) ||
-    voices.find((v) => v.name.toLowerCase().includes(prefix))
+    voices.find((v) => v.lang.startsWith(prefix))
   if (voice) utterance.voice = voice
 
   utterance.onstart = onStart

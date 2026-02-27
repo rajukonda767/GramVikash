@@ -57,6 +57,43 @@ function chunkText(text: string, maxLen = 180): string[] {
   return chunks.filter(c => c.length > 0)
 }
 
+/**
+ * Find the best Telugu voice available in the browser.
+ * Priority: Google Chirp3-HD-Aoede > any Google Telugu > any te-IN voice > prefix match
+ */
+function findBestVoice(langCode: string): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices()
+  const prefix = langCode.split("-")[0]
+
+  // 1. Prefer Google Chirp3-HD-Aoede (best fluent Telugu)
+  const chirp = voices.find(
+    (v) => v.name.includes("Chirp3-HD-Aoede") && v.lang.startsWith(prefix)
+  )
+  if (chirp) return chirp
+
+  // 2. Any Google Chirp3 Telugu voice
+  const chirp3 = voices.find(
+    (v) => v.name.includes("Chirp3") && v.lang.startsWith(prefix)
+  )
+  if (chirp3) return chirp3
+
+  // 3. Any Google Telugu voice
+  const googleTe = voices.find(
+    (v) => v.name.toLowerCase().includes("google") && v.lang.startsWith(prefix)
+  )
+  if (googleTe) return googleTe
+
+  // 4. Exact locale match (e.g. te-IN)
+  const exact = voices.find((v) => v.lang === langCode)
+  if (exact) return exact
+
+  // 5. Prefix match
+  const prefixMatch = voices.find((v) => v.lang.startsWith(prefix))
+  if (prefixMatch) return prefixMatch
+
+  return null
+}
+
 function speakWithBrowserTTS(
   text: string,
   langCode: string,
@@ -70,16 +107,11 @@ function speakWithBrowserTTS(
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(text)
   utterance.lang = langCode
-  utterance.rate = 0.85
+  utterance.rate = 0.9
   utterance.pitch = 1
   utterance.volume = 1
 
-  const voices = window.speechSynthesis.getVoices()
-  const prefix = langCode.split("-")[0]
-  const voice =
-    voices.find((v) => v.lang === langCode) ||
-    voices.find((v) => v.lang.startsWith(prefix)) ||
-    voices.find((v) => v.name.toLowerCase().includes(prefix))
+  const voice = findBestVoice(langCode)
   if (voice) utterance.voice = voice
 
   utterance.onstart = onStart
