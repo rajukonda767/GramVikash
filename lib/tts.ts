@@ -130,8 +130,6 @@ function speakWithTTSAPI(
   let idx = 0
   let audio: HTMLAudioElement | null = null
 
-  abortChain = false
-
   const browserFallback = (chunk: string, andThen: () => void) => {
     const fullLang = langCode === "te" ? "te-IN" : "en-IN"
     speakWithBrowserTTS(chunk, fullLang, () => {}, andThen)
@@ -145,12 +143,7 @@ function speakWithTTSAPI(
     const chunk = chunks[idx]
     if (idx === 0) onStart()
 
-    // Strategy 1: Our server-side proxy (avoids CORS issues)
     const apiUrl = `/api/tts?text=${encodeURIComponent(chunk)}&lang=${langCode}`
-    audio = new Audio(apiUrl)
-    audio.crossOrigin = "anonymous"
-    audio.preload = "auto"
-    currentAudio = audio
 
     const advanceNext = () => {
       if (abortChain) { onEnd(); return }
@@ -158,33 +151,50 @@ function speakWithTTSAPI(
       playNext()
     }
 
-    audio.onended = advanceNext
+    // Pre-fetch the audio as a blob first, then play from blob URL.
+    // This ensures the ENTIRE audio is downloaded before playback starts,
+    // so no beginning syllables get cut off.
+    fetch(apiUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error("TTS fetch failed")
+        return res.blob()
+      })
+      .then((blob) => {
+        if (abortChain) { onEnd(); return }
+        if (blob.size < 100) throw new Error("Empty audio")
 
-    audio.onerror = () => {
-      browserFallback(chunk, advanceNext)
-    }
+        const blobUrl = URL.createObjectURL(blob)
+        audio = new Audio(blobUrl)
+        currentAudio = audio
 
-    // Set a timeout: if audio doesn't load in 3s, fall back to browser TTS
-    const loadTimeout = setTimeout(() => {
-      if (audio && audio.readyState < 3) {
-        audio.oncanplaythrough = null
-        audio.onerror = null
-        audio.onended = null
-        browserFallback(chunk, advanceNext)
-      }
-    }, 3000)
+        audio.onended = () => {
+          URL.revokeObjectURL(blobUrl)
+          advanceNext()
+        }
+        audio.onerror = () => {
+          URL.revokeObjectURL(blobUrl)
+          browserFallback(chunk, advanceNext)
+        }
 
-    // Wait for audio data to fully load before playing to avoid cutting the start
-    audio.oncanplaythrough = () => {
-      clearTimeout(loadTimeout)
-      if (abortChain) { onEnd(); return }
-      audio?.play().catch(() => {
+        // Small delay to let browser fully decode the audio buffer
+        setTimeout(() => {
+          if (abortChain) { onEnd(); return }
+          audio?.play().catch(() => {
+            URL.revokeObjectURL(blobUrl)
+            browserFallback(chunk, advanceNext)
+          })
+        }, 80)
+      })
+      .catch(() => {
         browserFallback(chunk, advanceNext)
       })
-    }
 
-    // Start loading
-    audio.load()
+    // Timeout: if fetch takes more than 4s, fall back
+    setTimeout(() => {
+      if (idx === chunks.indexOf(chunk) && (!audio || audio.paused)) {
+        browserFallback(chunk, advanceNext)
+      }
+    }, 4000)
   }
 
   playNext()

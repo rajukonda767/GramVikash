@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useLanguage } from "@/lib/language-context"
 import { VoiceFormChatbot, type FormData } from "@/components/voice-form-chatbot"
 import { SchemeCards } from "@/components/scheme-cards"
-import { VoiceAssistant } from "@/components/voice-assistant"
 import { Shield, Mic } from "lucide-react"
 
 export default function SchemesPage() {
@@ -40,8 +39,6 @@ export default function SchemesPage() {
         />
       )}
 
-      {/* Voice assistant floating button */}
-      <VoiceAssistant />
     </div>
   )
 }

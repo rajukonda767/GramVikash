@@ -46,7 +46,6 @@ export function VoiceAssistant() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
