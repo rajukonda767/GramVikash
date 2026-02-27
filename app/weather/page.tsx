@@ -270,9 +270,32 @@ export default function WeatherPage() {
 
           {/* Farm Tip */}
           <div className="rounded-2xl bg-green-50 border border-green-200 p-5">
-            <div className="flex items-center gap-2 mb-2">
-              <Sprout className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-semibold text-green-800">{t.weatherFarmTip}</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Sprout className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-semibold text-green-800">{t.weatherFarmTip}</span>
+              </div>
+              <button
+                onClick={() => {
+                  if (!weather) return
+                  if (isSpeaking) {
+                    stopSpeaking()
+                    setIsSpeaking(false)
+                    return
+                  }
+                  const tip = getFarmTip(weather, lang)
+                  const intro = lang === "te" ? "వ్యవసాయ సూచన: " : "Farm tip: "
+                  speak(intro + tip, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
+                }}
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all ${
+                  isSpeaking
+                    ? "bg-green-600 text-white"
+                    : "bg-green-200 text-green-700 hover:bg-green-300"
+                }`}
+                aria-label={lang === "te" ? "సూచన వినండి" : "Listen to tip"}
+              >
+                <Volume2 className={`h-4 w-4 ${isSpeaking ? "animate-pulse" : ""}`} />
+              </button>
             </div>
             <p className="text-sm text-green-700 leading-relaxed">{getFarmTip(weather, lang)}</p>
           </div>
