@@ -11,6 +11,7 @@
   "dependencies": {
     "ai": "^6.0.0",
     "@ai-sdk/react": "^3.0.0",
+    "@ai-sdk/groq": "^2.0.0",
     "@hookform/resolvers": "^3.9.1",
     "@vercel/analytics": "1.6.1",
     "@radix-ui/react-accordion": "1.2.12",

@@ -1,6 +1,11 @@
 import { convertToModelMessages, streamText, UIMessage } from "ai"
+import { createGroq } from "@ai-sdk/groq"
 
 export const maxDuration = 30
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 export async function POST(req: Request) {
   const lang = req.headers.get("x-lang") || "en"
@@ -34,7 +39,7 @@ export async function POST(req: Request) {
 Always respond in clear, simple English. Use practical, actionable advice. Keep sentences short.`
 
   const result = streamText({
-    model: "openai/gpt-4o-mini",
+    model: groq("llama-3.3-70b-versatile"),
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
   })
