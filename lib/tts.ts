@@ -1,18 +1,60 @@
 /**
  * Shared TTS (Text-to-Speech) utilities used across the app.
- * Supports Telugu and English with Google Translate TTS proxy fallback.
+ * Supports Telugu and English with server-side Google TTS proxy and browser fallback.
  */
 
 let currentAudio: HTMLAudioElement | null = null
+let abortChain = false
 
 export function stopSpeaking() {
   if (typeof window === "undefined") return
+  abortChain = true
   window.speechSynthesis?.cancel()
   if (currentAudio) {
     currentAudio.pause()
     currentAudio.currentTime = 0
     currentAudio = null
   }
+}
+
+/**
+ * Split text into chunks suitable for TTS (max ~180 chars).
+ * Breaks at sentence boundaries (. ! ? |), then commas, then spaces.
+ */
+function chunkText(text: string, maxLen = 180): string[] {
+  const chunks: string[] = []
+  let remaining = text.trim()
+
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLen) {
+      chunks.push(remaining)
+      break
+    }
+
+    // Try to break at sentence-ending punctuation
+    let breakIdx = -1
+    for (const sep of [".", "!", "?", "|", "।"]) {
+      const idx = remaining.lastIndexOf(sep, maxLen)
+      if (idx > 20) { breakIdx = idx + 1; break }
+    }
+    // Try comma
+    if (breakIdx < 20) {
+      const idx = remaining.lastIndexOf(",", maxLen)
+      if (idx > 20) breakIdx = idx + 1
+    }
+    // Try space
+    if (breakIdx < 20) {
+      const idx = remaining.lastIndexOf(" ", maxLen)
+      if (idx > 10) breakIdx = idx
+    }
+    // Hard cut
+    if (breakIdx < 10) breakIdx = maxLen
+
+    chunks.push(remaining.substring(0, breakIdx).trim())
+    remaining = remaining.substring(breakIdx).trim()
+  }
+
+  return chunks.filter(c => c.length > 0)
 }
 
 function speakWithBrowserTTS(
@@ -52,56 +94,48 @@ function speakWithTTSAPI(
   onStart: () => void,
   onEnd: () => void
 ): HTMLAudioElement | null {
-  const maxLen = 180
-  const chunks: string[] = []
-  let remaining = text
-  while (remaining.length > 0) {
-    if (remaining.length <= maxLen) {
-      chunks.push(remaining)
-      break
-    }
-    let breakIdx = remaining.lastIndexOf(".", maxLen)
-    if (breakIdx < 20) breakIdx = remaining.lastIndexOf(" ", maxLen)
-    if (breakIdx < 20) breakIdx = maxLen
-    chunks.push(remaining.substring(0, breakIdx + 1))
-    remaining = remaining.substring(breakIdx + 1).trim()
-  }
-
+  const chunks = chunkText(text)
   let idx = 0
   let audio: HTMLAudioElement | null = null
 
+  abortChain = false
+
   const playNext = () => {
-    if (idx >= chunks.length) {
+    if (abortChain || idx >= chunks.length) {
       onEnd()
       return
     }
     const chunk = chunks[idx]
     if (idx === 0) onStart()
 
+    // Strategy 1: Our server-side proxy (avoids CORS issues)
     const apiUrl = `/api/tts?text=${encodeURIComponent(chunk)}&lang=${langCode}`
     audio = new Audio(apiUrl)
+    audio.crossOrigin = "anonymous"
     currentAudio = audio
 
     audio.onended = () => {
+      if (abortChain) { onEnd(); return }
       idx++
       playNext()
     }
     audio.onerror = () => {
-      const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${langCode}&client=tw-ob`
-      const audio2 = new Audio(googleUrl)
-      currentAudio = audio2
-      audio2.onended = () => { idx++; playNext() }
-      audio2.onerror = () => {
-        const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-        speakWithBrowserTTS(chunk, fullLang, () => {}, () => { idx++; playNext() })
-      }
-      audio2.play().catch(() => {
-        const fullLang = langCode === "te" ? "te-IN" : "en-IN"
-        speakWithBrowserTTS(chunk, fullLang, () => {}, () => { idx++; playNext() })
+      // Strategy 2: Browser SpeechSynthesis fallback
+      const fullLang = langCode === "te" ? "te-IN" : "en-IN"
+      speakWithBrowserTTS(chunk, fullLang, () => {}, () => {
+        if (abortChain) { onEnd(); return }
+        idx++
+        playNext()
       })
     }
     audio.play().catch(() => {
-      audio?.onerror?.(new Event("error") as ErrorEvent)
+      // If play rejected (autoplay policy), fall back to browser TTS
+      const fullLang = langCode === "te" ? "te-IN" : "en-IN"
+      speakWithBrowserTTS(chunk, fullLang, () => {}, () => {
+        if (abortChain) { onEnd(); return }
+        idx++
+        playNext()
+      })
     })
   }
 
@@ -111,7 +145,8 @@ function speakWithTTSAPI(
 
 /**
  * Main speak function. Speaks in the given language using the best available method.
- * For Telugu uses Google TTS API proxy. For English tries browser TTS first.
+ * For Telugu, always uses Google TTS API proxy for natural-sounding Telugu.
+ * For English, tries browser TTS first (usually good), falls back to API.
  */
 export function speak(
   text: string,
@@ -120,12 +155,16 @@ export function speak(
   onEnd: () => void
 ) {
   stopSpeaking()
+  abortChain = false
+
   const langCode = lang === "te" ? "te" : "en"
   const fullLangCode = lang === "te" ? "te-IN" : "en-IN"
 
   if (lang === "te") {
+    // Telugu: Always use API proxy for best quality
     currentAudio = speakWithTTSAPI(text, langCode, onStart, onEnd)
   } else {
+    // English: Try browser TTS first
     const voices = window.speechSynthesis?.getVoices() || []
     const hasEnglish = voices.some((v) => v.lang.startsWith("en"))
     if (hasEnglish) {

@@ -2,16 +2,17 @@
 
 import { useState } from "react"
 import { useLanguage } from "@/lib/language-context"
-import { FarmerForm } from "@/components/farmer-form"
+import { VoiceFormChatbot } from "@/components/voice-form-chatbot"
 import { SchemeCards } from "@/components/scheme-cards"
-import { Shield } from "lucide-react"
+import { VoiceAssistant } from "@/components/voice-assistant"
+import { Shield, Mic } from "lucide-react"
 
 export default function SchemesPage() {
-  const { t } = useLanguage()
+  const { lang, t } = useLanguage()
   const [showSchemes, setShowSchemes] = useState(false)
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
       {/* Header */}
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
@@ -21,14 +22,21 @@ export default function SchemesPage() {
         <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 text-balance">
           {t.appTitle}
         </h1>
-        <p className="text-muted-foreground text-balance">{t.appSubtitle}</p>
+        <p className="text-muted-foreground text-balance mb-2">{t.appSubtitle}</p>
+        <div className="inline-flex items-center gap-1.5 text-xs text-primary/80 bg-primary/5 px-3 py-1.5 rounded-full">
+          <Mic className="h-3 w-3" />
+          {lang === "te" ? "మాట్లాడి ఫారమ్ నింపండి - టైపింగ్ అవసరం లేదు" : "Speak to fill the form - no typing needed"}
+        </div>
       </div>
 
       {!showSchemes ? (
-        <FarmerForm onSubmit={() => setShowSchemes(true)} />
+        <VoiceFormChatbot onComplete={() => setShowSchemes(true)} />
       ) : (
         <SchemeCards onBack={() => setShowSchemes(false)} />
       )}
+
+      {/* Voice assistant floating button */}
+      <VoiceAssistant />
     </div>
   )
 }
