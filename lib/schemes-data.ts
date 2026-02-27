@@ -1,5 +1,3 @@
-import type { Language } from "./translations"
-
 export type SchemeData = {
   id: string
   crops: string[] // which crops this applies to ("all" = universal)
@@ -293,7 +291,7 @@ export const ALL_SCHEMES: SchemeData[] = [
     color: "teal",
     eligibility: {
       en: ["Rythu Bharosa enrolled farmers", "Crop registered with agriculture dept", "Both landowners & tenant farmers"],
-      te: ["రైతు భరోసాలో ���మోదైన రైతులు", "వ్యవసాయ శాఖలో పంట నమోదు", "భూ యజమానులు & కౌలు రైతులు ఇద్దరూ"],
+      te: ["రైతు భరోసాలో �����మోదైన రైతులు", "వ్యవసాయ శాఖలో పంట నమోదు", "భూ యజమానులు & కౌలు రైతులు ఇద్దరూ"],
     },
     applySteps: {
       en: ["Automatic for Rythu Bharosa beneficiaries", "Verify at Village Secretariat", "Crop details updated by VRO/VAO"],
@@ -401,7 +399,7 @@ export const ALL_SCHEMES: SchemeData[] = [
     color: "amber",
     eligibility: {
       en: ["AP farmers growing vegetables, fruits, spices", "Must register at Rythu Bazaar committee", "Fresh produce only - no stored goods"],
-      te: ["కూరగాయలు, పండ్లు, సుగంధ ద్రవ్యాలు పండించే AP రైతులు", "రైతు బజార్ కమిటీలో నమో���ు", "తాజా ఉత్పత్తులు మాత్రమే"],
+      te: ["కూరగాయలు, పండ్లు, సుగంధ ద్రవ్యాలు పండించే AP రైతులు", "రైతు బజార్ కమిటీలో న���ో���ు", "తాజా ఉత్పత్తులు మాత్రమే"],
     },
     applySteps: {
       en: ["Visit nearest Rythu Bazaar", "Register with market committee", "Get farmer ID & stall allotment", "Sell directly to consumers"],
