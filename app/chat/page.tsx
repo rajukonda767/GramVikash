@@ -26,6 +26,12 @@ function getMessageText(msg: { parts?: Array<{ type: string; text?: string }> })
 
 export default function ChatPage() {
   const { lang, t } = useLanguage()
+
+  // Wrap the actual chat in a keyed component so lang changes reset the transport
+  return <ChatInner key={lang} lang={lang} t={t} />
+}
+
+function ChatInner({ lang, t }: { lang: "en" | "te"; t: ReturnType<typeof useLanguage>["t"] }) {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [input, setInput] = useState("")
