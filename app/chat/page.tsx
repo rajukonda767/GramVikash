@@ -35,15 +35,12 @@ export default function ChatPage() {
   const langRef = useRef(lang)
   langRef.current = lang
 
-  // Recreate transport when lang changes so body always has current lang
-  const chatOptions: UseChatOptions = {
+  const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      body: { lang },
+      headers: { "x-lang": lang },
     }),
-  }
-
-  const { messages, sendMessage, status } = useChat(chatOptions)
+  })
 
   const isLoading = status === "streaming" || status === "submitted"
 

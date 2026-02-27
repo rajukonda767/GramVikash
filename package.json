@@ -9,6 +9,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "ai": "^6.0.0",
+    "@ai-sdk/react": "^3.0.0",
     "@hookform/resolvers": "^3.9.1",
     "@vercel/analytics": "1.6.1",
     "@radix-ui/react-accordion": "1.2.12",
@@ -57,9 +59,7 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^3.3.1",
     "vaul": "^1.1.2",
-    "zod": "^3.24.1",
-    "ai": "^6.0.0",
-    "@ai-sdk/react": "^3.0.0"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.0",
