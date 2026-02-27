@@ -62,21 +62,53 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
   }, [])
 
   const matchCrop = (input: string): string | null => {
-    const lower = input.toLowerCase()
-    const allCrops = [...CROPS_EN.map(c => c.toLowerCase()), ...CROPS_TE, ...CROP_KEYS]
-    for (let i = 0; i < allCrops.length; i++) {
-      if (lower.includes(allCrops[i].toLowerCase())) {
-        return CROP_KEYS[i % CROP_KEYS.length]
-      }
+    const lower = input.toLowerCase().trim()
+    // Direct key match
+    for (const key of CROP_KEYS) {
+      if (lower.includes(key)) return key
     }
+    // English name match
+    for (let i = 0; i < CROPS_EN.length; i++) {
+      if (lower.includes(CROPS_EN[i].toLowerCase())) return CROP_KEYS[i]
+    }
+    // Telugu name match
+    for (let i = 0; i < CROPS_TE.length; i++) {
+      if (lower.includes(CROPS_TE[i])) return CROP_KEYS[i]
+    }
+    // Fuzzy aliases for common speech recognition errors
+    const aliases: Record<string, string> = {
+      "rice": "paddy", "dhanyam": "paddy", "vari": "paddy", "nellu": "paddy", "ధాన్యం": "paddy",
+      "patti": "cotton", "ruia": "cotton", "paththi": "cotton",
+      "mirchi": "chilli", "mirapa": "chilli", "mirchi": "chilli",
+      "peanut": "groundnut", "verusenaga": "groundnut",
+      "cane": "sugarcane", "cheruku": "sugarcane", "ganna": "sugarcane",
+      "corn": "maize", "jowar": "maize", "mokka": "maize", "jonna": "maize",
+      "tamata": "tomato", "tamato": "tomato",
+      "pasupu": "turmeric", "haldi": "turmeric",
+      "aam": "mango", "mamidi": "mango",
+    }
+    for (const [alias, crop] of Object.entries(aliases)) {
+      if (lower.includes(alias)) return crop
+    }
+    // Number-based selection (1-9)
+    const num = parseInt(lower.replace(/[^0-9]/g, ""))
+    if (num >= 1 && num <= 9) return CROP_KEYS[num - 1]
     return null
   }
 
   const matchSize = (input: string): string | null => {
-    const lower = input.toLowerCase()
-    if (lower.includes("small") || lower.includes("చిన్న") || lower.includes("1") || lower.includes("తక్కువ")) return "small"
-    if (lower.includes("medium") || lower.includes("మధ్య") || lower.includes("2") || lower.includes("3")) return "medium"
-    if (lower.includes("large") || lower.includes("పెద్ద") || lower.includes("5") || lower.includes("ఎక్కువ") || lower.includes("big")) return "large"
+    const lower = input.toLowerCase().trim()
+    // Small
+    if (lower.includes("small") || lower.includes("చిన్న") || lower.includes("తక్కువ") || lower.includes("chinna") || lower.includes("1 acre") || lower.includes("ఒక ఎకరం")) return "small"
+    // Medium
+    if (lower.includes("medium") || lower.includes("మధ్య") || lower.includes("madhya") || lower.includes("2 acre") || lower.includes("3 acre") || lower.includes("4 acre")) return "medium"
+    // Large
+    if (lower.includes("large") || lower.includes("big") || lower.includes("పెద్ద") || lower.includes("ఎక్కువ") || lower.includes("pedda") || lower.includes("5 acre") || lower.includes("10") || lower.includes("above")) return "large"
+    // Number-based: 1=small, 2=medium, 3=large
+    const num = parseInt(lower.replace(/[^0-9]/g, ""))
+    if (num === 1) return "small"
+    if (num === 2 || num === 3 || num === 4) return "medium"
+    if (num >= 5) return "large"
     return null
   }
 
@@ -132,7 +164,7 @@ export function VoiceFormChatbot({ onComplete }: { onComplete: (data: FormData) 
         setTimeout(() => addBotMessage(confirm), 400)
       } else {
         const retry = lang === "te"
-          ? "క్షమించండి, గుర్తించలేదు. చిన్నది, మధ్యస్థం, లేదా పెద్దది అని చెప్పండి."
+          ? "క్షమించ���డి, గుర్తించలేదు. చిన్నది, మధ్యస్థం, లేదా పెద్దది అని చెప్పండి."
           : "Sorry, I didn't catch that. Please say Small, Medium, or Large."
         setTimeout(() => addBotMessage(retry), 400)
       }

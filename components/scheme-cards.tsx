@@ -3,7 +3,7 @@
 import { useLanguage } from "@/lib/language-context"
 import { speak, stopSpeaking } from "@/lib/tts"
 import { getRelevantSchemes, type SchemeData } from "@/lib/schemes-data"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   ArrowLeft,
   IndianRupee,
@@ -69,9 +69,22 @@ export function SchemeCards({ onBack, crop, farmSize, farmerName }: Props) {
   const [expanded, setExpanded] = useState<ExpandedState>({})
   const [speakingId, setSpeakingId] = useState<string | null>(null)
 
-  const schemes = getRelevantSchemes(crop, farmSize)
+  const schemes = getRelevantSchemes(crop || "paddy", farmSize || "small")
   const centralSchemes = schemes.filter((s) => s.category === "central")
   const apSchemes = schemes.filter((s) => s.category === "ap")
+
+  // Auto-speak greeting when schemes load
+  useEffect(() => {
+    if (schemes.length === 0) return
+    const greeting = lang === "te"
+      ? `${farmerName || "రైతు"}, మీ ${cropName} పంటకు ${schemes.length} పథకాలు దొరికాయి. వివరాలు చూడండి.`
+      : `${farmerName || "Farmer"}, found ${schemes.length} schemes for your ${cropName} crop. Check the details below.`
+    const timer = setTimeout(() => {
+      speak(greeting, lang, () => setSpeakingId("greeting"), () => setSpeakingId(null))
+    }, 600)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const l = (obj: { en: string; te: string }) => obj[lang]
   const la = (obj: { en: string[]; te: string[] }) => obj[lang]
@@ -238,6 +251,28 @@ export function SchemeCards({ onBack, crop, farmSize, farmerName }: Props) {
           ? `${cropName} పంట & మీ భూమి పరిమాణం ఆధారంగా ${schemes.length} అత్యంత సంబంధిత పథకాలు:`
           : `${schemes.length} most relevant schemes based on ${cropName} crop & your farm size:`}
       </p>
+
+      {/* No schemes edge case */}
+      {schemes.length === 0 && (
+        <div className="text-center py-12 rounded-2xl bg-muted/30 border border-border">
+          <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {lang === "te" ? "పథకాలు దొరకలేదు" : "No Schemes Found"}
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+            {lang === "te"
+              ? "మీ పంట & భూమి పరిమాణానికి ప్రత్యేక పథకాలు దొరకలేదు. దయచేసి వేరే పంటతో ప్రయత్నించండి లేదా సమీప వ్యవసాయ కార్యాలయాన్ని సంప్రదించండి."
+              : "No specific schemes found for your crop & farm size. Please try with a different crop or contact your nearest agriculture office."}
+          </p>
+          <button
+            onClick={onBack}
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-all"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {lang === "te" ? "మళ్ళీ ప్రయత్నించు" : "Try Again"}
+          </button>
+        </div>
+      )}
 
       {/* Central Schemes */}
       {centralSchemes.length > 0 && (
