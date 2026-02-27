@@ -147,16 +147,15 @@ export default function EmergencyPage() {
 
   const handleSelect = (type: EmergencyType) => {
     setSelected(type)
-    // Speak selection
+    const priorityTe =
+      type.priority === "CRITICAL"
+        ? "అత్యంత తీవ్రం"
+        : type.priority === "HIGH"
+          ? "అధిక ప్రాధాన్యత"
+          : "సాధారణం"
     const msg =
       lang === "te"
-        ? `${type.labelTe} ఎంచుకున్నారు. ప్రాధాన్యత: ${
-            type.priority === "CRITICAL"
-              ? "క్రిటికల్"
-              : type.priority === "HIGH"
-                ? "హై"
-                : "సాధారణ"
-          }`
+        ? `${type.labelTe} ఎంచుకున్నారు. ప్రాధాన్యత: ${priorityTe}`
         : `${type.labelEn} selected. Priority: ${type.priority}`
     speak(msg, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
   }
@@ -185,29 +184,18 @@ export default function EmergencyPage() {
     setSending(false)
     setStep("sent")
 
-    // Voice confirmation in both languages
-    const teMsg =
-      "మీ అత్యవసర సందేశం సమీప ప్రాంతాలకు పంపబడింది. సహాయం త్వరలో చేరుతుంది."
-    const enMsg =
-      "Your emergency alert has been sent to nearby areas. Help will reach you shortly."
+    // Voice confirmation only in the selected language
+    const confirmMsg =
+      lang === "te"
+        ? "మీ అత్యవసర సందేశం సమీప ప్రాంతాలకు పంపబడింది. సహాయం త్వరలో చేరుతుంది."
+        : "Your emergency alert has been sent to nearby areas. Help will reach you shortly."
 
     setTimeout(() => {
       speak(
-        lang === "te" ? teMsg : enMsg,
+        confirmMsg,
         lang,
         () => setIsSpeaking(true),
-        () => {
-          setIsSpeaking(false)
-          // After first language, speak in the other
-          setTimeout(() => {
-            speak(
-              lang === "te" ? enMsg : teMsg,
-              lang === "te" ? "en" : "te",
-              () => setIsSpeaking(true),
-              () => setIsSpeaking(false)
-            )
-          }, 500)
-        }
+        () => setIsSpeaking(false)
       )
     }, 600)
   }, [selected, location, lang])
@@ -288,7 +276,7 @@ export default function EmergencyPage() {
               onClick={captureLocation}
               className="text-xs text-blue-600 underline font-medium"
             >
-              Retry
+              {lang === "te" ? "మళ్ళీ ప్రయత్నించు" : "Retry"}
             </button>
           </div>
         )}
@@ -438,9 +426,7 @@ export default function EmergencyPage() {
             {isSpeaking && (
               <div className="flex items-center justify-center gap-2 mt-4 text-green-700">
                 <Volume2 className="h-4 w-4 animate-pulse" />
-                <span className="text-xs font-medium">
-                  {lang === "te" ? "మాట్లాడుతోంది..." : "Speaking..."}
-                </span>
+                <span className="text-xs font-medium">{t.speaking}</span>
               </div>
             )}
           </div>
