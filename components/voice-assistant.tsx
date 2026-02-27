@@ -29,14 +29,53 @@ function VoiceWave({ active }: { active: boolean }) {
   )
 }
 
+function findVoiceForLang(targetLang: string): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices()
+  // Exact match first (e.g. "te-IN")
+  let voice = voices.find((v) => v.lang === targetLang)
+  if (voice) return voice
+  // Partial match (e.g. starts with "te")
+  const prefix = targetLang.split("-")[0]
+  voice = voices.find((v) => v.lang.startsWith(prefix))
+  if (voice) return voice
+  // Try Google voices which often have good Telugu support
+  voice = voices.find(
+    (v) =>
+      v.name.toLowerCase().includes("google") &&
+      v.lang.startsWith(prefix)
+  )
+  if (voice) return voice
+  return null
+}
+
 export function VoiceAssistant() {
   const { lang, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
+  const [voicesLoaded, setVoicesLoaded] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
+
+  // Pre-load voices on mount - this is critical for Telugu TTS
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return
+
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices()
+      if (voices.length > 0) {
+        setVoicesLoaded(true)
+      }
+    }
+
+    loadVoices()
+    window.speechSynthesis.onvoiceschanged = loadVoices
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null
+    }
+  }, [])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -46,53 +85,87 @@ export function VoiceAssistant() {
     (text: string) => {
       if (!("speechSynthesis" in window)) return
       window.speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance(text)
-      utterance.lang = lang === "te" ? "te-IN" : "en-IN"
-      utterance.rate = 0.9
-      utterance.pitch = 1
 
-      const voices = window.speechSynthesis.getVoices()
-      const langVoice = voices.find(
-        (v) =>
-          v.lang === (lang === "te" ? "te-IN" : "en-IN") &&
-          v.name.toLowerCase().includes("female")
-      ) || voices.find((v) => v.lang === (lang === "te" ? "te-IN" : "en-IN"))
+      const targetLang = lang === "te" ? "te-IN" : "en-IN"
 
-      if (langVoice) utterance.voice = langVoice
+      const doSpeak = () => {
+        const utterance = new SpeechSynthesisUtterance(text)
+        utterance.lang = targetLang
+        utterance.rate = 0.85
+        utterance.pitch = 1
+        utterance.volume = 1
 
-      utterance.onstart = () => setIsSpeaking(true)
-      utterance.onend = () => setIsSpeaking(false)
-      window.speechSynthesis.speak(utterance)
+        const voice = findVoiceForLang(targetLang)
+        if (voice) {
+          utterance.voice = voice
+        }
+
+        utterance.onstart = () => setIsSpeaking(true)
+        utterance.onend = () => setIsSpeaking(false)
+        utterance.onerror = () => setIsSpeaking(false)
+        window.speechSynthesis.speak(utterance)
+      }
+
+      // If voices aren't loaded yet, wait a moment for them
+      if (!voicesLoaded) {
+        const waitForVoices = () => {
+          const voices = window.speechSynthesis.getVoices()
+          if (voices.length > 0) {
+            setVoicesLoaded(true)
+            doSpeak()
+          } else {
+            // Fallback: speak without explicit voice selection (browser will use default)
+            setTimeout(() => {
+              doSpeak()
+            }, 300)
+          }
+        }
+        waitForVoices()
+      } else {
+        doSpeak()
+      }
     },
-    [lang]
+    [lang, voicesLoaded]
   )
 
   const getResponse = useCallback(
     (transcript: string): string => {
       const lower = transcript.toLowerCase()
-      if (
-        lower.includes("పీఎం కిసాన్") ||
-        lower.includes("pm kisan") ||
-        lower.includes("కిసాన్") ||
-        lower.includes("kisan") ||
-        lower.includes("పి ఎం") ||
-        lower.includes("pm")
-      ) {
-        return lang === "te"
-          ? "పీఎం కిసాన్ పథకం ద్వారా రైతులకు సంవత్సరానికి ఆరు వేల రూపాయలు మూడు విడతలుగా ప్రభుత్వం అందిస్తుంది."
-          : "Under PM Kisan scheme, the government provides six thousand rupees per year to farmers in three installments."
+      // Telugu text matching is case-insensitive by default, but we also check the original
+      const original = transcript
+
+      // PM Kisan matching - both Telugu and English variants
+      const pmKisanKeywords = [
+        "పీఎం కిసాన్", "కిసాన్", "పి ఎం", "కిసాన", "పీఎం",
+        "pm kisan", "kisan", "pm kisan scheme",
+        "6000", "ఆరు వేల", "six thousand",
+        "పథకం", "scheme"
+      ]
+      if (pmKisanKeywords.some((kw) => lower.includes(kw) || original.includes(kw))) {
+        return t.pmKisanReply
       }
-      if (
-        lower.includes("రైతు భరోసా") ||
-        lower.includes("rythu bharosa") ||
-        lower.includes("భరోసా") ||
-        lower.includes("bharosa") ||
-        lower.includes("rythu")
-      ) {
-        return lang === "te"
-          ? "వైఎస్ఆర్ రైతు భరోసా పథకం ద్వారా అర్హులైన రైతులకు ప్రతి సంవత్సరం పదమూడు వేల ఐదు వందల రూపాయల ఆర్థిక సహాయం అందుతుంది."
-          : "Under YSR Rythu Bharosa scheme, eligible farmers receive thirteen thousand five hundred rupees per year as financial assistance."
+
+      // Rythu Bharosa matching - both Telugu and English variants
+      const rythuKeywords = [
+        "రైతు భరోసా", "భరోసా", "రైతు", "వైఎస్ఆర్",
+        "rythu bharosa", "bharosa", "rythu", "ysr",
+        "13500", "పదమూడు", "thirteen"
+      ]
+      if (rythuKeywords.some((kw) => lower.includes(kw) || original.includes(kw))) {
+        return t.rythuBharosaReply
       }
+
+      // General help / greeting
+      const helpKeywords = [
+        "హలో", "నమస్కారం", "సహాయం", "ఏమి", "ఏం", "చెప్పు",
+        "hello", "help", "what", "tell", "hi"
+      ]
+      if (helpKeywords.some((kw) => lower.includes(kw) || original.includes(kw))) {
+        return lang === "te"
+          ? "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. ఏ పథకం గురించి తెలుసుకోవాలో చెప్పండి."
+          : "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Please tell me which scheme you want to know about."
+      }
+
       return t.notUnderstood
     },
     [lang, t]
@@ -109,13 +182,23 @@ export function VoiceAssistant() {
     const recognition = new SpeechRecognition()
     recognition.lang = lang === "te" ? "te-IN" : "en-IN"
     recognition.interimResults = false
-    recognition.maxAlternatives = 3
+    recognition.continuous = false
+    recognition.maxAlternatives = 5
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript
+      // Check all alternatives for better matching (Telugu recognition can vary)
+      const results = event.results[0]
+      const transcript = results[0].transcript
       setMessages((prev) => [...prev, { role: "user", text: transcript }])
 
-      const response = getResponse(transcript)
+      // Try matching against all alternatives for better accuracy
+      let response = ""
+      for (let i = 0; i < results.length; i++) {
+        response = getResponse(results[i].transcript)
+        if (response !== t.notUnderstood) break
+      }
+      if (!response) response = getResponse(transcript)
+
       setTimeout(() => {
         setMessages((prev) => [...prev, { role: "assistant", text: response }])
         speakText(response)
@@ -144,7 +227,20 @@ export function VoiceAssistant() {
     <>
       {/* Floating mic button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true)
+          // Speak a welcome message when opening for the first time
+          if (messages.length === 0) {
+            const welcome =
+              lang === "te"
+                ? "నమస్కారం! నేను మీ వాయిస్ అసిస్టెంట్ని. పీఎం కిసాన్ లేదా రైతు భరోసా గురించి నన్ను అడగండి."
+                : "Hello! I am your voice assistant. Ask me about PM Kisan or Rythu Bharosa."
+            setTimeout(() => {
+              setMessages([{ role: "assistant", text: welcome }])
+              speakText(welcome)
+            }, 600)
+          }
+        }}
         className={`fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full bg-primary text-primary-foreground shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${
           !isOpen ? "animate-bounce" : "opacity-0 pointer-events-none"
         }`}
