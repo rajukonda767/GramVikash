@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: crop-disease-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+      - key: TWILIO_ACCOUNT_SID
+        fromDatabase:
+          name: twilio
+          property: account_sid
+      - key: TWILIO_AUTH_TOKEN
+        fromDatabase:
+          name: twilio
+          property: auth_token
+      - key: TWILIO_NUMBER
+        value: ${TWILIO_NUMBER}
+      - key: TWILIO_RECIPIENT_PHONES
+        value: ${TWILIO_RECIPIENT_PHONES}
+      - key: PORT
+        value: 5000

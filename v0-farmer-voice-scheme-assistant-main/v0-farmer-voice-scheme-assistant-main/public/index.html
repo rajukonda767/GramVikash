@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farmer Voice Scheme Assistant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef5ec;
+      --fg: #1a2e1a;
+      --card: rgba(255,255,255,0.82);
+      --card-fg: #1a2e1a;
+      --primary: #2d7a3a;
+      --primary-fg: #f5faf5;
+      --secondary: #d6e8d0;
+      --secondary-fg: #2a3f2a;
+      --muted: #dfe9db;
+      --muted-fg: #5a6e5a;
+      --accent: #b8860b;
+      --accent-fg: #1a2e1a;
+      --border: #c2d4bc;
+      --input-bg: #e8f0e4;
+      --destructive: #d44;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* Background pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.03) 1px, transparent 0);
+      background-size: 40px 40px;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      border-radius: 50%;
+      background: rgba(45,122,58,0.06);
+      filter: blur(80px);
+      z-index: -1;
+    }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 2rem 1rem 6rem; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 2.5rem; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .logo { display: flex; align-items: center; gap: 0.5rem; }
+    .logo-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(45,122,58,0.12); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text { font-weight: 600; font-size: 0.875rem; color: var(--fg); }
+    h1 { font-size: 2rem; font-weight: 700; color: var(--fg); text-wrap: balance; }
+    .subtitle { color: var(--muted-fg); margin-top: 0.5rem; text-wrap: balance; }
+
+    /* Language Toggle */
+    .lang-toggle { display: flex; align-items: center; gap: 0.5rem; background: var(--card); backdrop-filter: blur(12px); padding: 0.5rem 0.75rem; border-radius: 999px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .lang-toggle svg { width: 16px; height: 16px; color: var(--primary); }
+    .lang-btn { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted-fg); transition: all 0.2s; }
+    .lang-btn.active { background: var(--primary); color: var(--primary-fg); box-shadow: 0 1px 4px rgba(45,122,58,0.3); }
+    .lang-btn:hover:not(.active) { color: var(--fg); }
+
+    /* Card */
+    .card { border-radius: 16px; background: var(--card); backdrop-filter: blur(16px); border: 1px solid var(--border); padding: 2rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+
+    /* Form */
+    .form-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .form-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(45,122,58,0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .form-title { font-size: 1.125rem; font-weight: 600; }
+
+    .field { margin-bottom: 1.25rem; }
+    .field label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--fg); }
+    .field label svg { width: 16px; height: 16px; color: var(--primary); }
+    .field input, .field select {
+      width: 100%;
+      border-radius: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      color: var(--fg);
+      outline: none;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a6e5a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2.5rem; }
+    .field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(45,122,58,0.15); }
+    .field input::placeholder { color: var(--muted-fg); }
+
+    .submit-btn {
+      width: 100%;
+      border-radius: 12px;
+      background: var(--primary);
+      color: var(--primary-fg);
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(45,122,58,0.3);
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+    .submit-btn:hover { transform: scale(1.02); box-shadow: 0 6px 20px rgba(45,122,58,0.35); }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Schemes */
+    .schemes-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .schemes-title { font-size: 1.25rem; font-weight: 600; }
+    .back-btn { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--muted-fg); cursor: pointer; background: none; border: none; transition: color 0.2s; }
+    .back-btn:hover { color: var(--fg); }
+
+    .scheme-card {
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    .scheme-card:hover { transform: translateY(-2px); }
+    .scheme-card.pm { background: linear-gradient(135deg, rgba(45,122,58,0.12), rgba(45,122,58,0.03)); border-color: rgba(45,122,58,0.25); }
+    .scheme-card.rythu { background: linear-gradient(135deg, rgba(184,134,11,0.12), rgba(184,134,11,0.03)); border-color: rgba(184,134,11,0.25); }
+
+    .scheme-top { padding: 1.5rem 1.5rem 1rem; }
+    .scheme-icon-row { display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem; }
+    .scheme-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .scheme-card.pm .scheme-icon { background: rgba(45,122,58,0.12); }
+    .scheme-card.rythu .scheme-icon { background: rgba(184,134,11,0.12); }
+    .scheme-name { font-size: 1.125rem; font-weight: 600; color: var(--fg); }
+    .scheme-desc { font-size: 0.875rem; color: var(--muted-fg); line-height: 1.6; }
+    .scheme-amount-row { display: flex; align-items: center; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.06); margin-top: 1rem; }
+    .amount { font-weight: 700; font-size: 1rem; color: var(--fg); }
+    .amount-label { font-size: 0.875rem; color: var(--muted-fg); }
+    .annual-badge { margin-left: auto; font-size: 0.75rem; color: var(--muted-fg); }
+
+    /* Expandable sections */
+    .expand-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expand-btn:hover { background: rgba(0,0,0,0.02); }
+    .expand-btn-left { display: flex; align-items: center; gap: 0.625rem; }
+    .expand-btn-left svg { width: 16px; height: 16px; color: var(--primary); }
+    .expand-btn-left span { font-size: 0.875rem; font-weight: 500; color: var(--fg); }
+    .chevron { width: 16px; height: 16px; color: var(--muted-fg); transition: transform 0.2s; }
+    .chevron.open { transform: rotate(180deg); }
+
+    .expand-content { padding: 0 1.5rem 1rem 2.75rem; animation: slideDown 0.2s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .expand-content ul, .expand-content ol { list-style: none; }
+    .expand-content li { display: flex; align-items: start; gap: 0.625rem; font-size: 0.875rem; color: var(--muted-fg); line-height: 1.6; margin-bottom: 0.625rem; }
+    .bullet { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+    .scheme-card.pm .bullet { background: var(--primary); }
+    .scheme-card.rythu .bullet { background: var(--accent); }
+    .step-num { width: 20px; height: 20px; border-radius: 50%; background: rgba(45,122,58,0.1); color: var(--primary); font-size: 0.625rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .scheme-card.rythu .step-num { background: rgba(184,134,11,0.1); color: var(--accent); }
+
+    /* Documents box */
+    .docs-box { margin-top: 1rem; padding: 0.75rem; border-radius: 12px; background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); }
+    .docs-title { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--fg); margin-bottom: 0.5rem; }
+    .docs-title svg { width: 14px; height: 14px; color: var(--primary); }
+    .docs-box li { font-size: 0.75rem; margin-bottom: 0.25rem; }
+    .docs-box .bullet { width: 4px; height: 4px; margin-top: 7px; background: var(--muted-fg); }
+
+    /* Apply button */
+    .apply-btn-wrap { padding: 0.5rem 1.5rem 1.5rem; }
+    .apply-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .apply-btn:hover { opacity: 0.9; }
+    .apply-btn:active { transform: scale(0.98); }
+    .scheme-card.pm .apply-btn { background: var(--primary); color: var(--primary-fg); }
+    .scheme-card.rythu .apply-btn { background: var(--accent); color: #fff; }
+    .apply-btn svg { width: 16px; height: 16px; }
+
+    /* Floating mic */
+    .mic-float {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 100;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--primary-fg);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(45,122,58,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      animation: micBounce 2s ease infinite;
+    }
+    .mic-float:hover { transform: scale(1.1); }
+    .mic-float svg { width: 28px; height: 28px; }
+    .mic-float.hidden { opacity: 0; pointer-events: none; }
+    @keyframes micBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+    /* Voice Panel */
+    .voice-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      animation: slideUp 0.3s ease;
+    }
+    @media(min-width:640px) {
+      .voice-panel { bottom: 1.5rem; right: 1.5rem; left: auto; width: 384px; }
+      .voice-panel .panel-inner { border-radius: 16px; }
+    }
+    @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .panel-inner {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -4px 40px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      max-height: 80vh;
+      overflow: hidden;
+    }
+
+    .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid rgba(0,0,0,0.06); background: rgba(45,122,58,0.04); }
+    .panel-header-left { display: flex; align-items: center; gap: 0.75rem; }
+    .panel-header-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(45,122,58,0.12); display: flex; align-items: center; justify-content: center; }
+    .panel-header-icon svg { width: 16px; height: 16px; color: var(--primary); }
+    .panel-header h3 { font-size: 0.875rem; font-weight: 600; color: var(--fg); }
+    .panel-header p { font-size: 0.75rem; color: var(--muted-fg); }
+    .close-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted-fg); transition: all 0.2s; }
+    .close-btn:hover { background: var(--muted); color: var(--fg); }
+    .close-btn svg { width: 16px; height: 16px; }
+
+    .panel-hint { padding: 1rem 1.25rem; font-size: 0.75rem; color: var(--muted-fg); text-align: center; line-height: 1.6; }
+
+    .chat-area { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 100px; max-height: 300px; }
+    .chat-msg { display: flex; animation: fadeInUp 0.3s ease; }
+    .chat-msg.user { justify-content: flex-end; }
+    .chat-msg.assistant { justify-content: flex-start; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .msg-bubble { max-width: 85%; border-radius: 16px; padding: 0.75rem 1rem; font-size: 0.875rem; line-height: 1.5; }
+    .msg-bubble .msg-label { font-size: 0.625rem; font-weight: 500; opacity: 0.7; margin-bottom: 0.25rem; }
+    .chat-msg.user .msg-bubble { background: var(--primary); color: var(--primary-fg); border-bottom-right-radius: 6px; }
+    .chat-msg.assistant .msg-bubble { background: var(--muted); color: var(--fg); border-bottom-left-radius: 6px; }
+
+    .mic-controls { padding: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+    .mic-row { display: flex; align-items: center; gap: 1rem; }
+    .stop-btn { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; background: var(--muted); color: var(--muted-fg); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .stop-btn:hover { background: var(--destructive); color: #fff; }
+    .stop-btn svg { width: 16px; height: 16px; }
+    .mic-btn { width: 64px; height: 64px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .mic-btn.idle { background: var(--primary); color: var(--primary-fg); box-shadow: 0 0 20px rgba(45,122,58,0.3); }
+    .mic-btn.idle:hover { transform: scale(1.05); }
+    .mic-btn.recording { background: var(--destructive); color: #fff; box-shadow: 0 0 40px rgba(221,68,68,0.5); transform: scale(1.1); }
+    .mic-btn svg { width: 28px; height: 28px; }
+    .mic-status { font-size: 0.75rem; color: var(--muted-fg); }
+
+    /* Voice wave bars */
+    .voice-wave { display: flex; align-items: center; gap: 3px; height: 32px; }
+    .voice-bar { width: 4px; border-radius: 4px; background: #fff; animation: voiceBar 0.6s ease-in-out infinite alternate; }
+    @keyframes voiceBar { 0% { height: 6px; } 100% { height: 28px; } }
+    .voice-bar:nth-child(1) { animation-delay: 0s; }
+    .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+    .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+    .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+    .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+
+    .hidden { display: none !important; }
+
+    @media(max-width:480px) {
+      h1 { font-size: 1.5rem; }
+      .card { padding: 1.5rem; }
+      .logo-text { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>
+        </div>
+        <span class="logo-text" id="logoText">Farmer Voice Scheme Assistant</span>
+      </div>
+      <div class="lang-toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        <button class="lang-btn active" id="btnEn" onclick="setLanguage('en')">English</button>
+        <button class="lang-btn" id="btnTe" onclick="setLanguage('te')">తెలుగు</button>
+      </div>
+    </div>
+    <div>
+      <h1 id="mainTitle">Farmer Voice Scheme Assistant</h1>
+      <p class="subtitle" id="mainSubtitle">Discover government schemes with your voice</p>
+    </div>
+  </header>
+
+  <!-- FORM VIEW -->
+  <div id="formView">
+    <div class="card" style="max-width:480px;margin:0 auto;">
+      <div class="form-header">
+        <div class="form-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 17 3.5s1.5 4.5 0 8.5c-1 2.7-3 4-5 4.5"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        </div>
+        <h2 class="form-title" id="formTitle">Farmer Voice Scheme Assistant</h2>
+      </div>
+      <div class="field">
+        <label id="labelName">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Farmer Name
+        </label>
+        <input type="text" id="nameInput" placeholder="Enter your name" />
+      </div>
+      <div class="field">
+        <label id="labelCrop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 17 3.5s1.5 4.5 0 8.5c-1 2.7-3 4-5 4.5"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          Crop Type
+        </label>
+        <select id="cropSelect"><option value="">Select crop type</option></select>
+      </div>
+      <div class="field">
+        <label id="labelFarm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          Farm Size
+        </label>
+        <select id="farmSelect"><option value="">Select farm size</option></select>
+      </div>
+      <button class="submit-btn" id="submitBtn" disabled onclick="showSchemes()">Show Eligible Schemes</button>
+    </div>
+  </div>
+
+  <!-- SCHEMES VIEW -->
+  <div id="schemesView" class="hidden">
+    <div class="schemes-header">
+      <h2 class="schemes-title" id="schemesTitle">Eligible Schemes for You</h2>
+      <button class="back-btn" onclick="showForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span id="backText">Back to Form</span>
+      </button>
+    </div>
+    <div id="schemesContainer"></div>
+  </div>
+</div>
+
+<!-- Floating Mic -->
+<button class="mic-float" id="micFloat" onclick="openVoicePanel()" aria-label="Tap to speak">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+</button>
+
+<!-- Voice Panel -->
+<div class="voice-panel hidden" id="voicePanel">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div class="panel-header-left">
+        <div class="panel-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </div>
+        <div>
+          <h3 id="panelTitle">Voice Assistant</h3>
+          <p id="panelStatus">Tap to speak</p>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeVoicePanel()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="panel-hint" id="panelHint">Try saying: "Tell me about PM Kisan" or "How to apply for Rythu Bharosa"</div>
+    <div class="chat-area hidden" id="chatArea"></div>
+    <div class="mic-controls">
+      <div class="mic-row">
+        <button class="stop-btn hidden" id="stopBtn" onclick="stopSpeaking()" aria-label="Stop speaking">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        </button>
+        <button class="mic-btn idle" id="micBtn" onclick="toggleMic()" aria-label="Tap to speak">
+          <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+          <div class="voice-wave hidden" id="voiceWave">
+            <div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div><div class="voice-bar"></div>
+          </div>
+        </button>
+      </div>
+      <p class="mic-status" id="micStatus">Tap to speak</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== TRANSLATIONS ==========
+const T = {
+  en: {
+    appTitle: "Farmer Voice Scheme Assistant",
+    appSubtitle: "Discover government schemes with your voice",
+    farmerName: "Farmer Name", farmerNamePH: "Enter your name",
+    cropType: "Crop Type", selectCrop: "Select crop type",
+    farmSize: "Farm Size", selectFarm: "Select farm size",
+    showSchemes: "Show Eligible Schemes",
+    eligibleSchemes: "Eligible Schemes for You",
+    backToForm: "Back to Form",
+    crops: [
+      {v:"paddy",l:"Paddy (Rice)"},{v:"cotton",l:"Cotton"},{v:"chilli",l:"Chilli"},
+      {v:"groundnut",l:"Groundnut"},{v:"sugarcane",l:"Sugarcane"},{v:"maize",l:"Maize (Corn)"},
+      {v:"tomato",l:"Tomato"},{v:"turmeric",l:"Turmeric"},{v:"mango",l:"Mango"}
+    ],
+    farms: [{v:"small",l:"Small (< 2 acres)"},{v:"medium",l:"Medium (2-5 acres)"},{v:"large",l:"Large (> 5 acres)"}],
+    perYear: "/ year", annual: "Annual",
+    eligibility: "Eligibility Criteria", howToApply: "How to Apply", applyOnline: "Apply Online",
+    docsRequired: "Documents Required",
+    docs: ["Aadhaar Card","Bank Passbook (linked to Aadhaar)","Land Ownership Documents / Pattadar Passbook","Ration Card (if available)"],
+    pmKisan: "PM Kisan Scheme", rs6000: "Rs. 6,000",
+    pmKisanDesc: "Income support scheme for farmers. The government provides Rs. 6,000 per year in three installments to eligible farmer families.",
+    pmKisanElig: [
+      "All landholding farmer families with cultivable land",
+      "Family includes husband, wife, and minor children",
+      "Institutional landholders are NOT eligible",
+      "Income tax payers and government employees are excluded",
+      "Must have Aadhaar card linked with bank account"
+    ],
+    pmKisanApply: [
+      "Visit the official PM Kisan website: pmkisan.gov.in",
+      "Click on 'New Farmer Registration' on the home page",
+      "Select your state and enter your Aadhaar number",
+      "Fill in personal details: name, address, bank account, IFSC code",
+      "Upload land ownership documents and Aadhaar card",
+      "Submit the form and note down the registration number"
+    ],
+    pmKisanLink: "https://pmkisan.gov.in",
+    rythuBharosa: "YSR Rythu Bharosa", rs13500: "Rs. 13,500",
+    rythuBharosaDesc: "Financial support scheme by Andhra Pradesh Government. Eligible farmers receive Rs. 13,500 per year as financial assistance.",
+    rythuElig: [
+      "Must be a resident farmer of Andhra Pradesh",
+      "Should own cultivable agricultural land",
+      "Land records must be updated in the state portal (Webland)",
+      "Aadhaar-linked bank account is mandatory",
+      "Tenant farmers with valid tenancy agreement are also eligible"
+    ],
+    rythuApply: [
+      "Visit the nearest Meeseva center or Village Secretariat",
+      "Carry Aadhaar card, land passbook (pattadar passbook), and bank passbook",
+      "Fill the application form at the center",
+      "Submit land documents for verification by the Village Revenue Officer",
+      "Once verified, your name will be added to the beneficiary list",
+      "You can also check status online at ysrrythubharosa.ap.gov.in"
+    ],
+    rythuLink: "https://ysrrythubharosa.ap.gov.in",
+    voiceAssistant: "Voice Assistant",
+    tapToSpeak: "Tap to speak", listening: "Listening...", speaking: "Speaking...",
+    voiceHint: 'Try saying: "Tell me about PM Kisan" or "How to apply for Rythu Bharosa"',
+    you: "You", assistant: "Assistant",
+    notUnderstood: "Sorry, I didn't understand. Please try asking about PM Kisan or Rythu Bharosa, their eligibility, or how to apply.",
+    welcome: "Hello! I am your voice assistant. Ask me about PM Kisan or Rythu Bharosa, their eligibility, or how to apply.",
+    pmKisanReply: "Under PM Kisan scheme, the government provides six thousand rupees per year to farmers in three installments of two thousand rupees each.",
+    rythuBharosaReply: "Under YSR Rythu Bharosa scheme, eligible farmers receive thirteen thousand five hundred rupees per year as financial assistance from the Andhra Pradesh government.",
+    pmKisanEligReply: "To be eligible for PM Kisan, you must be a landholding farmer family. Your Aadhaar must be linked to your bank account. Income tax payers and government employees are not eligible.",
+    pmKisanApplyReply: "To apply for PM Kisan, visit pmkisan.gov.in website. Click New Farmer Registration. Enter your Aadhaar number, fill your details, upload land documents, and submit the form.",
+    rythuEligReply: "For Rythu Bharosa, you must be a resident farmer of Andhra Pradesh with cultivable land. Your land records must be updated in the state portal, and you need an Aadhaar-linked bank account.",
+    rythuApplyReply: "To apply for Rythu Bharosa, visit your nearest Meeseva center or Village Secretariat. Carry your Aadhaar card, land passbook, and bank passbook. Fill the form and submit documents for verification.",
+    specifyElig: "Please specify which scheme. Ask about PM Kisan eligibility or Rythu Bharosa eligibility.",
+    specifyApply: "Please specify which scheme. Ask how to apply for PM Kisan or how to apply for Rythu Bharosa.",
+    generalHelp: "I can tell you about PM Kisan and YSR Rythu Bharosa schemes. Ask about scheme details, eligibility criteria, or how to apply.",
+    noSpeechSupport: "Speech Recognition is not supported. Please use Chrome browser."
+  },
+  te: {
+    appTitle: "రైతు వాయిస్ స్కీమ్ అసిస్టెంట్",
+    appSubtitle: "మీ గొంతుతో ప్రభుత్వ పథకాలను తెలుసుకోండి",
+    farmerName: "రైతు పేరు", farmerNamePH: "మీ పేరు నమోదు చేయండి",
+    cropType: "పంట రకం", selectCrop: "పంట రకాన్ని ఎంచుకోండి",
+    farmSize: "వ్యవసాయ భూమి పరిమాణం", selectFarm: "భూమి పరిమాణం ఎంచుకోండి",
+    showSchemes: "అర్హత ఉన్న పథకాలు చూపించు",
+    eligibleSchemes: "మీ కోసం అర్హత ఉన్న పథకాలు",
+    backToForm: "ఫారమ్‌కు తిరిగి వెళ్ళు",
+    crops: [
+      {v:"paddy",l:"వరి (ధాన్యం)"},{v:"cotton",l:"పత్తి"},{v:"chilli",l:"మిరప"},
+      {v:"groundnut",l:"వేరుశెనగ"},{v:"sugarcane",l:"చెరకు"},{v:"maize",l:"మొక్కజొన్న"},
+      {v:"tomato",l:"టమాట"},{v:"turmeric",l:"పసుపు"},{v:"mango",l:"మామిడి"}
+    ],
+    farms: [{v:"small",l:"చిన్నది (< 2 ఎకరాలు)"},{v:"medium",l:"మధ్యస్థం (2-5 ఎకరాలు)"},{v:"large",l:"పెద్దది (> 5 ఎకరాలు)"}],
+    perYear: "/ సంవత్సరం", annual: "వార్షికం",
+    eligibility: "అర్హత ప్రమాణాలు", howToApply: "దరఖాస్తు ఎలా చేయాలి", applyOnline: "ఆన్‌లైన్‌లో దరఖాస్తు చేయండి",
+    docsRequired: "అవసరమైన పత్రాలు",
+    docs: ["ఆధార్ కార్డు","బ్యాంకు పాస్‌బుక్ (ఆధార్‌తో లింక్)","భూమి యాజమాన్య పత్రాలు / పట్టాదార్ పాస్‌బుక్","రేషన్ కార్డు (అందుబాటులో ఉంటే)"],
+    pmKisan: "పీఎం కిసాన్ పథకం", rs6000: "రూ. 6,000",
+    pmKisanDesc: "రైతులకు ఆదాయ మద్దతు పథకం. ప్రభుత్వం అర్హులైన రైతు కుటుంబాలకు సంవత్సరానికి రూ. 6,000 మూడు విడతలుగా అందిస్తుంది.",
+    pmKisanElig: [
+      "సాగు భూమి ఉన్న అన్ని రైతు కుటుంబాలు",
+      "కుటుంబం అంటే భర్త, భార్య మరియు మైనర్ పిల్లలు",
+      "సంస్థాగత భూ యజమానులు అర్హులు కారు",
+      "ఆదాయపు పన్ను చెల్లింపుదారులు మరియు ప్రభుత్వ ఉద్యోగులు మినహాయింపు",
+      "బ్యాంకు ఖాతాతో లింక్ చేసిన ఆధార్ కార్డు తప్పనిసరి"
+    ],
+    pmKisanApply: [
+      "అధికారిక వెబ్‌సైట్ pmkisan.gov.in కు వెళ్ళండి",
+      "హోమ్ పేజీలో 'కొత్త రైతు నమోదు' పై క్లిక్ చేయండి",
+      "మీ రాష్ట్రం ఎంచుకోండి, ఆధార్ నంబర్ నమోదు చేయండి",
+      "వ్యక్తిగత వివరాలు: పేరు, చిరునామా, బ్యాంకు ఖాతా, IFSC కోడ్ నమోదు చేయండి",
+      "భూమి యాజమాన్య పత్రాలు మరియు ఆధార్ కార్డు అప్‌లోడ్ చేయండి",
+      "ఫారమ్ సబ్మిట్ చేసి, రిజిస్ట్రేషన్ నంబర్ నోట్ చేసుకోండి"
+    ],
+    pmKisanLink: "https://pmkisan.gov.in",
+    rythuBharosa: "వైఎస్ఆర్ రైతు భరోసా", rs13500: "రూ. 13,500",
+    rythuBharosaDesc: "ఆంధ్రప్రదేశ్ ప్రభుత్వం అందించే ఆర్థిక సహాయ పథకం. అర్హులైన రైతులకు ప్రతి సంవత్సరం రూ. 13,500 ఆర్థిక సహాయం అందుతుంది.",
+    rythuElig: [
+      "ఆంధ్రప్రదేశ్ నివాసి రైతుగా ఉండాలి",
+      "సాగు భూమి కలిగి ఉండాలి",
+      "భూమి రికార్డులు రాష్ట్ర పోర్టల్‌లో (వెబ్‌ల్యాండ్) నవీకరించబడి ఉండాలి",
+      "ఆధార్‌తో లింక్ చేసిన బ్యాంకు ఖాతా తప్పనిసరి",
+      "చెల్లుబాటు అయ్యే కౌలు ఒప్పందం ఉన్న కౌలు రైతులు కూడా అర్హులే"
+    ],
+    rythuApply: [
+      "సమీపంలోని మీసేవ కేంద్రం లేదా గ్రామ సచివాలయానికి వెళ్ళండి",
+      "ఆధార్ కార్డు, భూమి పాస్‌బుక్ (పట్టాదార్ పాస్‌బుక్), బ్యాంకు పాస్‌బుక్ తీసుకెళ్ళండి",
+      "కేంద్రంలో దరఖాస్తు ఫారమ్ నింపండి",
+      "గ్రామ రెవెన్యూ అధికారి ధృవీకరణ కోసం భూమి పత్రాలు సబ్మిట్ చేయండి",
+      "ధృవీకరణ తర్వాత, మీ పేరు లబ్ధిదారుల జాబితాలో చేర్చబడుతుంది",
+      "ysrrythubharosa.ap.gov.in లో ఆన్‌లైన్‌లో స్థితి తనిఖీ చేయవచ్చు"
+    ],
+    rythuLink: "https://ysrrythubharosa.ap.gov.in",
+    voiceAssistant: "వాయిస్ అసిస్టెంట్",
+    tapToSpeak: "మాట్లాడటానికి నొక్కండి", listening: "వింటున్నాను...", speaking: "మాట్లాడుతున్నాను...",
+    voiceHint: 'ఇలా అడగండి: "పీఎం కిసాన్ గురించి చెప్పు" లేదా "రైతు భరోసాకు ఎలా దరఖాస్తు చేయాలి"',
+    you: "మీరు", assistant: "అసిస్టెంట్",
+    notUnderstood: "క్షమించండి, నాకు అర్థం కాలేదు. దయచేసి పీఎం కిసాన్ లేదా రైతు భరోసా గురించి, వాటి అర్హత లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి.",
+    welcome: "నమస్కారం! నేను మీ వాయిస్ అసిస్టెంట్ని. పీఎం కిసాన్ లేదా రైతు భరోసా గురించి, అర్హత గురించి, లేదా దరఖాస్తు ఎలా చేయాలో నన్ను అడగండి.",
+    pmKisanReply: "పీఎం కిసాన్ పథకం ద్వారా రైతులకు సంవత్సరానికి ఆరు వేల రూపాయలు మూడు విడతలుగా రెండు వేల రూపాయల చొప్పున ప్రభుత్వం అందిస్తుంది.",
+    rythuBharosaReply: "వైఎస్ఆర్ రైతు భరోసా పథకం ద్వారా అర్హులైన రైతులకు ప్రతి సంవత్సరం పదమూడు వేల ఐదు వందల రూపాయల ఆర్థిక సహాయం ఆంధ్రప్రదేశ్ ప్రభుత్వం అందిస్తుంది.",
+    pmKisanEligReply: "పీఎం కిసాన్ అర్హత కోసం, మీరు సాగు భూమి ఉన్న రైతు కుటుంబంగా ఉండాలి. ఆధార్ బ్యాంకు ఖాతాతో లింక్ చేయాలి. ఆదాయపు పన్ను చెల్లింపుదారులు, ప్రభుత్వ ఉద్యోగులు అర్హులు కారు.",
+    pmKisanApplyReply: "పీఎం కిసాన్ కోసం దరఖాస్తు చేయడానికి, pmkisan.gov.in వెబ్‌సైట్‌కు వెళ్ళండి. కొత్త రైతు నమోదు పై క్లిక్ చేయండి. ఆధార్ నంబర్ నమోదు చేసి, వ్యక్తిగత వివరాలు నింపి, భూమి పత్రాలు అప్‌లోడ్ చేసి, ఫారమ్ సబ్మిట్ చేయండి.",
+    rythuEligReply: "రైతు భరోసా కోసం, మీరు ఆంధ్రప్రదేశ్ నివాసి రైతుగా ఉండాలి. సాగు భూమి ఉండాలి. భూమి రికార్డులు రాష్ట్ర పోర్టల్‌లో నవీకరించబడి ఉండాలి. ఆధార్‌తో లింక్ చేసిన బ్యాంకు ఖాతా తప్పనిసరి.",
+    rythuApplyReply: "రైతు భరోసా కోసం దరఖాస్తు చేయడానికి, సమీపంలోని మీసేవ కేంద్రం లేదా గ్రామ సచివాలయానికి వెళ్ళండి. ఆధార్ కార్డు, భూమి పాస్‌బుక్, బ్యాంకు పాస్‌బుక్ తీసుకెళ్ళండి. దరఖాస్తు ఫారమ్ నింపి, పత్రాలు ధృవీకరణ కోసం సబ్మిట్ చేయండి.",
+    specifyElig: "ఏ పథకం అర్హత గురించి తెలుసుకోవాలో చెప్పండి. పీఎం కిసాన్ అర్హత లేదా రైతు భరోసా అర్హత అని అడగండి.",
+    specifyApply: "ఏ పథకానికి దరఖాస్తు చేయాలో చెప్పండి. పీఎం కిసాన్ దరఖాస్తు లేదా రైతు భరోసా దరఖాస్తు అని అడగండి.",
+    generalHelp: "నేను మీకు పీఎం కిసాన్ మరియు వైఎస్ఆర్ రైతు భరోసా పథకాల గురించి చెప్పగలను. పథకం గురించి, అర్హత గురించి, లేదా దరఖాస్తు ప్రక్రియ గురించి అడగండి.",
+    noSpeechSupport: "ఈ బ్రౌజర్‌లో స్పీచ్ రికగ్నిషన్ అందుబాటులో లేదు. Chrome బ్రౌజర్ వాడండి."
+  }
+};
+
+let lang = "en";
+let messages = [];
+let isListening = false;
+let isSpeaking = false;
+let currentAudio = null;
+let recognition = null;
+const expandedState = {};
+
+function t() { return T[lang]; }
+
+// ========== LANGUAGE ==========
+function setLanguage(l) {
+  lang = l;
+  document.getElementById("btnEn").classList.toggle("active", l === "en");
+  document.getElementById("btnTe").classList.toggle("active", l === "te");
+  document.documentElement.lang = l === "te" ? "te" : "en";
+  updateUI();
+}
+
+function updateUI() {
+  const tr = t();
+  document.getElementById("logoText").textContent = tr.appTitle;
+  document.getElementById("mainTitle").textContent = tr.appTitle;
+  document.getElementById("mainSubtitle").textContent = tr.appSubtitle;
+  document.getElementById("formTitle").textContent = tr.appTitle;
+
+  // Form labels
+  const labelName = document.getElementById("labelName");
+  labelName.innerHTML = labelName.querySelector("svg").outerHTML + " " + tr.farmerName;
+  document.getElementById("nameInput").placeholder = tr.farmerNamePH;
+
+  const labelCrop = document.getElementById("labelCrop");
+  labelCrop.innerHTML = labelCrop.querySelector("svg").outerHTML + " " + tr.cropType;
+
+  const labelFarm = document.getElementById("labelFarm");
+  labelFarm.innerHTML = labelFarm.querySelector("svg").outerHTML + " " + tr.farmSize;
+
+  // Crop select
+  const cropSel = document.getElementById("cropSelect");
+  const cropVal = cropSel.value;
+  cropSel.innerHTML = '<option value="">' + tr.selectCrop + '</option>';
+  tr.crops.forEach(c => { cropSel.innerHTML += '<option value="'+c.v+'">'+c.l+'</option>'; });
+  cropSel.value = cropVal;
+
+  // Farm select
+  const farmSel = document.getElementById("farmSelect");
+  const farmVal = farmSel.value;
+  farmSel.innerHTML = '<option value="">' + tr.selectFarm + '</option>';
+  tr.farms.forEach(f => { farmSel.innerHTML += '<option value="'+f.v+'">'+f.l+'</option>'; });
+  farmSel.value = farmVal;
+
+  document.getElementById("submitBtn").textContent = tr.showSchemes;
+
+  // Schemes
+  document.getElementById("schemesTitle").textContent = tr.eligibleSchemes;
+  document.getElementById("backText").textContent = tr.backToForm;
+
+  // Voice panel
+  document.getElementById("panelTitle").textContent = tr.voiceAssistant;
+  document.getElementById("panelHint").textContent = tr.voiceHint;
+  document.getElementById("micStatus").textContent = isListening ? tr.listening : isSpeaking ? tr.speaking : tr.tapToSpeak;
+  document.getElementById("panelStatus").textContent = isListening ? tr.listening : isSpeaking ? tr.speaking : tr.tapToSpeak;
+
+  // Re-render schemes if visible
+  if (!document.getElementById("schemesView").classList.contains("hidden")) {
+    renderSchemes();
+  }
+
+  checkFormValid();
+}
+
+// ========== FORM ==========
+function checkFormValid() {
+  const name = document.getElementById("nameInput").value.trim();
+  const crop = document.getElementById("cropSelect").value;
+  const farm = document.getElementById("farmSelect").value;
+  document.getElementById("submitBtn").disabled = !(name && crop && farm);
+}
+document.getElementById("nameInput").addEventListener("input", checkFormValid);
+document.getElementById("cropSelect").addEventListener("change", checkFormValid);
+document.getElementById("farmSelect").addEventListener("change", checkFormValid);
+
+function showSchemes() {
+  document.getElementById("formView").classList.add("hidden");
+  document.getElementById("schemesView").classList.remove("hidden");
+  renderSchemes();
+}
+
+function showForm() {
+  document.getElementById("schemesView").classList.add("hidden");
+  document.getElementById("formView").classList.remove("hidden");
+}
+
+// ========== SCHEME CARDS ==========
+function renderSchemes() {
+  const tr = t();
+  const schemes = [
+    { id:"pm", cls:"pm", title:tr.pmKisan, desc:tr.pmKisanDesc, amount:tr.rs6000, elig:tr.pmKisanElig, apply:tr.pmKisanApply, link:tr.pmKisanLink, icon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>' },
+    { id:"rythu", cls:"rythu", title:tr.rythuBharosa, desc:tr.rythuBharosaDesc, amount:tr.rs13500, elig:tr.rythuElig, apply:tr.rythuApply, link:tr.rythuLink, icon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>' }
+  ];
+
+  let html = "";
+  schemes.forEach(s => {
+    const eligOpen = expandedState[s.id+"_elig"];
+    const applyOpen = expandedState[s.id+"_apply"];
+
+    html += '<div class="scheme-card '+s.cls+'">';
+    html += '<div class="scheme-top">';
+    html += '<div class="scheme-icon-row"><div class="scheme-icon">'+s.icon+'</div><div><div class="scheme-name">'+s.title+'</div></div></div>';
+    html += '<p class="scheme-desc">'+s.desc+'</p>';
+    html += '<div class="scheme-amount-row"><span class="amount">'+s.amount+'</span><span class="amount-label">'+tr.perYear+'</span><span class="annual-badge">'+tr.annual+'</span></div>';
+    html += '</div>';
+
+    // Eligibility expandable
+    html += '<button class="expand-btn" onclick="toggleExpand(\''+s.id+'_elig\')">';
+    html += '<div class="expand-btn-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg><span>'+tr.eligibility+'</span></div>';
+    html += '<svg class="chevron '+(eligOpen?"open":"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    html += '</button>';
+    if (eligOpen) {
+      html += '<div class="expand-content"><ul>';
+      s.elig.forEach(e => { html += '<li><span class="bullet"></span>'+e+'</li>'; });
+      html += '</ul></div>';
+    }
+
+    // How to apply expandable
+    html += '<button class="expand-btn" onclick="toggleExpand(\''+s.id+'_apply\')">';
+    html += '<div class="expand-btn-left"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>'+tr.howToApply+'</span></div>';
+    html += '<svg class="chevron '+(applyOpen?"open":"")+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+    html += '</button>';
+    if (applyOpen) {
+      html += '<div class="expand-content"><ol>';
+      s.apply.forEach((step, i) => { html += '<li><span class="step-num">'+(i+1)+'</span>'+step+'</li>'; });
+      html += '</ol>';
+      // Documents
+      html += '<div class="docs-box"><div class="docs-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>'+tr.docsRequired+'</div><ul>';
+      tr.docs.forEach(d => { html += '<li><span class="bullet" style="background:var(--muted-fg)"></span>'+d+'</li>'; });
+      html += '</ul></div></div>';
+    }
+
+    // Apply button
+    html += '<div class="apply-btn-wrap"><a href="'+s.link+'" target="_blank" rel="noopener noreferrer" class="apply-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'+tr.applyOnline+'</a></div>';
+    html += '</div>';
+  });
+
+  document.getElementById("schemesContainer").innerHTML = html;
+}
+
+function toggleExpand(key) {
+  expandedState[key] = !expandedState[key];
+  renderSchemes();
+}
+
+// ========== VOICE TTS ==========
+function speakText(text, onDone) {
+  stopSpeaking();
+  const langCode = lang === "te" ? "te" : "en";
+
+  // Chunk text for TTS limit
+  const maxLen = 180;
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLen) { chunks.push(remaining); break; }
+    let idx = remaining.lastIndexOf(".", maxLen);
+    if (idx < 20) idx = remaining.lastIndexOf(" ", maxLen);
+    if (idx < 20) idx = maxLen;
+    chunks.push(remaining.substring(0, idx + 1));
+    remaining = remaining.substring(idx + 1).trim();
+  }
+
+  let ci = 0;
+  isSpeaking = true;
+  updateSpeakingUI();
+
+  function playNext() {
+    if (ci >= chunks.length) {
+      isSpeaking = false;
+      updateSpeakingUI();
+      if (onDone) onDone();
+      return;
+    }
+
+    const chunk = chunks[ci];
+    // Try Google Translate TTS via direct URL (works well for Telugu)
+    const url = "https://translate.google.com/translate_tts?ie=UTF-8&q=" + encodeURIComponent(chunk) + "&tl=" + langCode + "&client=tw-ob";
+    const audio = new Audio(url);
+    currentAudio = audio;
+
+    audio.onended = function() { ci++; playNext(); };
+    audio.onerror = function() {
+      // Fallback: browser SpeechSynthesis
+      browserSpeak(chunk, function() { ci++; playNext(); });
+    };
+    audio.play().catch(function() {
+      browserSpeak(chunk, function() { ci++; playNext(); });
+    });
+  }
+
+  playNext();
+}
+
+function browserSpeak(text, onDone) {
+  if (!("speechSynthesis" in window)) { if (onDone) onDone(); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === "te" ? "te-IN" : "en-IN";
+  u.rate = 0.85;
+  u.pitch = 1;
+  u.volume = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const prefix = u.lang.split("-")[0];
+  const v = voices.find(v => v.lang === u.lang) || voices.find(v => v.lang.startsWith(prefix));
+  if (v) u.voice = v;
+  u.onend = onDone;
+  u.onerror = onDone;
+  window.speechSynthesis.speak(u);
+}
+
+function stopSpeaking() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  isSpeaking = false;
+  updateSpeakingUI();
+}
+
+function updateSpeakingUI() {
+  const tr = t();
+  document.getElementById("stopBtn").classList.toggle("hidden", !isSpeaking);
+  document.getElementById("micStatus").textContent = isListening ? tr.listening : isSpeaking ? tr.speaking : tr.tapToSpeak;
+  document.getElementById("panelStatus").textContent = isListening ? tr.listening : isSpeaking ? tr.speaking : tr.tapToSpeak;
+}
+
+// ========== VOICE RECOGNITION ==========
+function getResponse(transcript) {
+  const tr = t();
+  const lower = transcript.toLowerCase();
+  const has = kw => lower.includes(kw) || transcript.includes(kw);
+
+  const isEligQ = ["అర్హత","eligib","eligible","criteria","who can","ఎవరు","ప్రమాణ","qualify"].some(has);
+  const isApplyQ = ["దరఖాస్తు","apply","how to","ఎలా","register","నమోదు","process","ప్రక్రియ","website","online"].some(has);
+  const isPm = ["పీఎం కిసాన్","కిసాన్","పి ఎం","కిసాన","పీఎం","pm kisan","kisan","6000","ఆరు వేల"].some(has);
+  const isRy = ["రైతు భరోసా","భరోసా","వైఎస్ఆర్","rythu bharosa","bharosa","ysr","13500","పదమూడు"].some(has);
+
+  if (isPm && isEligQ) return tr.pmKisanEligReply;
+  if (isPm && isApplyQ) return tr.pmKisanApplyReply;
+  if (isRy && isEligQ) return tr.rythuEligReply;
+  if (isRy && isApplyQ) return tr.rythuApplyReply;
+  if (isEligQ) return tr.specifyElig;
+  if (isApplyQ) return tr.specifyApply;
+  if (isPm) return tr.pmKisanReply;
+  if (isRy) return tr.rythuBharosaReply;
+  if (["రైతు","farmer"].some(has)) return tr.generalHelp;
+  if (["హలో","నమస్కారం","సహాయం","ఏమి","ఏం","చెప్పు","hello","help","what","tell","hi","scheme","పథకం"].some(has)) return tr.generalHelp;
+  return tr.notUnderstood;
+}
+
+function addMessage(role, text) {
+  messages.push({role, text});
+  const area = document.getElementById("chatArea");
+  area.classList.remove("hidden");
+  document.getElementById("panelHint").classList.add("hidden");
+
+  const div = document.createElement("div");
+  div.className = "chat-msg " + role;
+  const tr = t();
+  div.innerHTML = '<div class="msg-bubble"><p class="msg-label">'+(role==="user"?tr.you:tr.assistant)+'</p>'+text+'</div>';
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function toggleMic() {
+  if (isListening) {
+    if (recognition) recognition.stop();
+    isListening = false;
+    updateMicUI();
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert(t().noSpeechSupport); return; }
+
+  stopSpeaking();
+  recognition = new SR();
+  recognition.lang = lang === "te" ? "te-IN" : "en-IN";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 5;
+
+  recognition.onresult = function(event) {
+    const results = event.results[0];
+    const transcript = results[0].transcript;
+    addMessage("user", transcript);
+
+    let resp = "";
+    for (let i = 0; i < results.length; i++) {
+      resp = getResponse(results[i].transcript);
+      if (resp !== t().notUnderstood) break;
+    }
+    if (!resp) resp = getResponse(transcript);
+
+    setTimeout(function() {
+      addMessage("assistant", resp);
+      speakText(resp);
+    }, 400);
+  };
+
+  recognition.onend = function() { isListening = false; updateMicUI(); };
+  recognition.onerror = function() { isListening = false; updateMicUI(); };
+
+  recognition.start();
+  isListening = true;
+  updateMicUI();
+}
+
+function updateMicUI() {
+  const btn = document.getElementById("micBtn");
+  const icon = document.getElementById("micIcon");
+  const wave = document.getElementById("voiceWave");
+  const tr = t();
+
+  btn.className = "mic-btn " + (isListening ? "recording" : "idle");
+  icon.classList.toggle("hidden", isListening);
+  wave.classList.toggle("hidden", !isListening);
+  document.getElementById("micStatus").textContent = isListening ? tr.listening : isSpeaking ? tr.speaking : tr.tapToSpeak;
+  document.getElementById("panelStatus").textContent = isListening ? tr.listening : isSpeaking ? tr.speaking : tr.tapToSpeak;
+}
+
+// ========== VOICE PANEL ==========
+function openVoicePanel() {
+  document.getElementById("micFloat").classList.add("hidden");
+  document.getElementById("voicePanel").classList.remove("hidden");
+
+  if (messages.length === 0) {
+    const tr = t();
+    setTimeout(function() {
+      addMessage("assistant", tr.welcome);
+      speakText(tr.welcome);
+    }, 500);
+  }
+}
+
+function closeVoicePanel() {
+  document.getElementById("voicePanel").classList.add("hidden");
+  document.getElementById("micFloat").classList.remove("hidden");
+  stopSpeaking();
+  if (recognition) recognition.stop();
+  isListening = false;
+  updateMicUI();
+}
+
+// Pre-load voices
+if ("speechSynthesis" in window) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+}
+
+// Init
+updateUI();
+</script>
+</body>
+</html>

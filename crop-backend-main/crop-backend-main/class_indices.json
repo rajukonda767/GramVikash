@@ -1,0 +1,22 @@
+{
+  "0": "paddy_bacterial_leaf_blight",
+  "1": "paddy_bacterial_leaf_streak",
+  "2": "paddy_bacterial_panicle_blight",
+  "3": "paddy_blast",
+  "4": "paddy_brown_spot",
+  "5": "paddy_dead_heart",
+  "6": "paddy_downy_mildew",
+  "7": "paddy_hispa",
+  "8": "paddy_normal",
+  "9": "paddy_tungro",
+  "10": "tomato_Tomato_Bacterial_spot",
+  "11": "tomato_Tomato_Early_blight",
+  "12": "tomato_Tomato_Late_blight",
+  "13": "tomato_Tomato_Leaf_Mold",
+  "14": "tomato_Tomato_Septoria_leaf_spot",
+  "15": "tomato_Tomato_Spider_mites_Two_spotted_spider_mite",
+  "16": "tomato_Tomato__Target_Spot",
+  "17": "tomato_Tomato__Tomato_YellowLeaf__Curl_Virus",
+  "18": "tomato_Tomato__Tomato_mosaic_virus",
+  "19": "tomato_Tomato_healthy"
+}
