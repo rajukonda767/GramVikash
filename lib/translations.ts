@@ -14,6 +14,7 @@ export const translations = {
     navCropDisease: "Crop Disease",
     navSchemes: "Govt Schemes",
     navChat: "AI Chat",
+    navAbout: "About Us",
 
     // Home page features
     featureCropTitle: "Crop Disease Detection",
@@ -201,6 +202,23 @@ export const translations = {
     chatWelcome: "Hello! I am your AI farming assistant. Ask me anything about crops, diseases, weather, or government schemes. You can type or use the microphone to speak.",
     thinking: "Thinking...",
     speaking: "Speaking...",
+
+    // About Us
+    aboutTitle: "About Us",
+    aboutSubtitle: "Building the future of intelligent crop health management",
+    aboutMission: "Our Mission",
+    aboutMissionDesc: "At code4Climate, we are committed to empowering farmers with advanced AI technology to detect and manage crop diseases in real-time. Our mission is to make agricultural expertise accessible, affordable, and available to every farmer, regardless of their location or technical background.",
+    aboutValues: "Our Values",
+    aboutValue1Title: "Farmer-First Approach",
+    aboutValue1Desc: "We design everything with farmers' needs at the center",
+    aboutValue2Title: "Accessibility",
+    aboutValue2Desc: "Voice-first interface in Telugu and English languages",
+    aboutValue3Title: "Innovation",
+    aboutValue3Desc: "Cutting-edge AI models for accurate disease detection",
+    aboutValue4Title: "Sustainability",
+    aboutValue4Desc: "Promoting eco-friendly farming practices",
+    meetTeam: "Meet Our Team",
+    teamOfExperts: "A passionate team of developers and innovators dedicated to solving farming challenges",
   },
   te: {
     // Brand
@@ -215,6 +233,7 @@ export const translations = {
     navCropDisease: "పంట వ్యాధి",
     navSchemes: "ప్రభుత్వ పథకాలు",
     navChat: "AI చాట్",
+    navAbout: "మా గురించి",
 
     // Home page features
     featureCropTitle: "పంట వ్యాధి గుర్తింపు",
@@ -402,5 +421,22 @@ export const translations = {
     chatWelcome: "నమస్కారం! నేను మీ AI వ్యవసాయ అసిస్టెంట్ని. పంటలు, వ్యాధులు, వాతావరణం లేదా ప్రభుత్వ పథకాల గురించి ఏదైనా అడగండి. మీరు టైప్ చేయవచ్చు లేదా మైక్రోఫోన్ వాడి మాట్లాడవచ్చు.",
     thinking: "ఆలోచిస్తోంది...",
     speaking: "మాట్లాడుతోంది...",
+
+    // About Us
+    aboutTitle: "మా గురించి",
+    aboutSubtitle: "తెలివైన పంట ఆరోగ్య నిర్వహణ యొక్క భవిష్యత్ నిర్మాణం",
+    aboutMission: "మా లక్ష్యం",
+    aboutMissionDesc: "code4Climate లో, మేము రైతులకు అధునాతన AI సాంకేతికతను అందించడానికి కట్టుబడి ఉన్నాము, తద్వారా వారు పంట వ్యాధులను నిజ-సమయంలో గుర్తించి, నిర్వహించగలరు. మా లక్ష్యం వ్యవసాయ నిపుణత సhúా సులభతరం, సుందర మరియు ప్రతి రైతుకు అందుబాటులో ఉండేలా చేయడం.",
+    aboutValues: "మా విలువలు",
+    aboutValue1Title: "రైతు-కేంద్రీకృత విధానం",
+    aboutValue1Desc: "రైతుల అవసరాలను కేంద్రగా విషయాలను రూపొందిస్తాము",
+    aboutValue2Title: "అందుబాటు",
+    aboutValue2Desc: "తెలుగు మరియు ఆంగ్లంలో వాయిస్-ప్రధాన ఇంటర్‌ఫేస్",
+    aboutValue3Title: "ఆవిష్కరణ",
+    aboutValue3Desc: "ఖచ్చితమైన వ్యాధి గుర్తింపు కోసం అత్యాధునిక AI నమూనాలు",
+    aboutValue4Title: "స్థితిస్థాపకత",
+    aboutValue4Desc: "పర్యావరణ-స్నేహී వ్యవసాయ పద్ధతులను ప్రోత్సహించడం",
+    meetTeam: "మా బృందాన్ని కలుసుకోండి",
+    teamOfExperts: "వ్యవసాయ సవాళ్లను పరిష్కరించడానికి నిబద్ధమైన డెవలపర్లు మరియు ఆవిష్కారకుల ఉత్సాహీ బృందం",
   },
 } as const

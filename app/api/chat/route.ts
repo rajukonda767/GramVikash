@@ -5,7 +5,7 @@ import { fetchWeather, weatherToSummary } from "@/lib/weather"
 export const maxDuration = 30
 
 const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: "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",
 })
 
 export async function POST(req: Request) {

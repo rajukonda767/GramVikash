@@ -4,13 +4,18 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useLanguage } from "@/lib/language-context"
 import { LanguageToggle } from "./language-toggle"
-import { Home, Leaf, Shield, MessageCircle, Sprout, Menu, X, CloudSun } from "lucide-react"
-import { useState } from "react"
+import { Home, Leaf, Shield, MessageCircle, Sprout, Menu, X, CloudSun, Info } from "lucide-react"
+import { useState, useEffect } from "react"
 
 export function NavBar() {
   const { t } = useLanguage()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const links = [
     { href: "/", label: t.navHome, icon: Home },
@@ -18,6 +23,7 @@ export function NavBar() {
     { href: "/schemes", label: t.navSchemes, icon: Shield },
     { href: "/weather", label: t.navWeather, icon: CloudSun },
     { href: "/chat", label: t.navChat, icon: MessageCircle },
+    { href: "/about", label: t.navAbout, icon: Info },
   ]
 
   return (
@@ -30,13 +36,13 @@ export function NavBar() {
               <Sprout className="h-5 w-5 text-primary" />
             </div>
             <span className="font-bold text-foreground text-lg hidden sm:block">
-              {t.appName}
+              {mounted ? t.appName : "GramVikash"}
             </span>
           </Link>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1">
-            {links.map((link) => {
+            {mounted && links.map((link) => {
               const isActive = pathname === link.href
               return (
                 <Link
@@ -69,7 +75,7 @@ export function NavBar() {
         </div>
 
         {/* Mobile nav */}
-        {mobileOpen && (
+        {mounted && mobileOpen && (
           <div className="md:hidden pb-4 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col gap-1">
               {links.map((link) => {

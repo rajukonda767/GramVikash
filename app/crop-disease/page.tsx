@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useLanguage } from "@/lib/language-context"
+import { getCleanDiseaseName } from "@/lib/disease-names"
 import { speak, stopSpeaking, initVoices } from "@/lib/tts"
 import {
   Upload,
@@ -26,7 +27,19 @@ type PredictionResult = {
   treatment: string[]
 }
 
-// Demo predictions for when no backend is connected
+// Function to translate severity level to Telugu
+function getSeverityInLanguage(severity: string, lang: string): string {
+  if (lang === "te") {
+    const severityMap: Record<string, string> = {
+      "High": "చాలా తీవ్రంగా",
+      "Medium": "మధ్యస్థంగా",
+      "Low": "తక్కువగా",
+    }
+    return severityMap[severity] || severity
+  }
+  return severity
+}
+
 const demoPredictions: Record<string, { en: PredictionResult; te: PredictionResult }> = {
   blast: {
     en: {
@@ -124,11 +137,16 @@ export default function CropDiseasePage() {
   const [result, setResult] = useState<PredictionResult | null>(null)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [dragOver, setDragOver] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [cameraActive, setCameraActive] = useState(false)
 
-  useEffect(() => { initVoices() }, [])
+  useEffect(() => {
+    setMounted(true)
+    initVoices()
+  }, [])
 
   const handleFileChange = useCallback((file: File) => {
     if (!file.type.startsWith("image/")) return
@@ -192,32 +210,91 @@ export default function CropDiseasePage() {
   const predict = useCallback(async () => {
     if (!image) return
     setIsAnalyzing(true)
-    // Simulate a backend API call (demo mode)
-    await new Promise((r) => setTimeout(r, 2000))
-    // Randomly pick a result
-    const keys = Object.keys(demoPredictions)
-    const key = keys[Math.floor(Math.random() * keys.length)]
-    const pred = demoPredictions[key][lang]
-    setResult(pred)
-    setIsAnalyzing(false)
+    setError(null)
+    try {
+      // Convert base64 image to blob
+      const response = await fetch(image)
+      const blob = await response.blob()
+      
+      // Create FormData for backend
+      const formData = new FormData()
+      formData.append("image", blob, fileName || "image.jpg")
+      formData.append("language", lang)  // Send the selected language to backend
+      
+      console.log("🚀 Sending image to backend with language:", lang)
+      // Call backend API
+      const backendResponse = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        body: formData,
+      })
+      
+      console.log("📨 Backend response status:", backendResponse.status)
+      const data = await backendResponse.json()
+      console.log("📦 Backend response data:", data)
+      
+      if (!backendResponse.ok) {
+        const errorData = await backendResponse.json()
+        const errorMessage = lang === "te" 
+          ? errorData.message || "చిత్రం విశ్లేషణ విఫలమైంది"
+          : errorData.message_en || errorData.error || "Image analysis failed"
+        setError(errorMessage)
+        throw new Error(errorMessage)
+      }
+      
+      // Transform backend response to match expected format
+      // Use disease_name_te (Telugu name) or disease_name_en (English name) based on selection
+      const diseaseName = lang === "te" ? data.disease_name_te : data.disease_name_en || data.disease || "Unknown Disease"
+      console.log("🎯 Disease name to display:", diseaseName)
+      
+      // Use clean disease name mapping
+      const cleanDiseaseNameEn = getCleanDiseaseName(data.disease || "", "en")
+      const cleanDiseaseNameTe = getCleanDiseaseName(data.disease || "", "te")
+      const finalDiseaseName = lang === "te" ? cleanDiseaseNameTe : cleanDiseaseNameEn
+      console.log("✨ Clean disease name:", finalDiseaseName)
+      
+      const pred: PredictionResult = {
+        disease_name: finalDiseaseName,
+        confidence: data.confidence ? parseFloat(String(data.confidence)) : 85,
+        severity_rate: data.severity || "Medium",
+        prevention: Array.isArray(data.preventions) ? data.preventions : ["Apply recommended practices"],
+        treatment: Array.isArray(data.treatments) ? data.treatments : ["Consult local agricultural officer"],
+      }
+      
+      console.log("✅ Formatted prediction:", pred)
+      setResult(pred)
+      
+      // Auto-speak the result
+      const severityInLang = getSeverityInLanguage(pred.severity_rate, lang)
+      const firstTreatment = pred.treatment[0] || "సలహా చేయుటకు డాక్టర్‌ను సంప్రదించండి"
+      const firstPrevention = pred.prevention[0] || "పంట నిర్వహణ చేయుటకు జాగ్రత్త చేయండి"
+      
+      const speechText =
+        lang === "te"
+          ? `మీ పంటకు ${pred.disease_name} ఉంది. విశ్వసనీయత ${pred.confidence} శాతం. తీవ్రత ${severityInLang}. చికిత్స: ${firstTreatment}. నవారణ: ${firstPrevention}.`
+          : `Your crop has ${pred.disease_name}. Confidence is ${pred.confidence} percent. Severity is ${severityInLang}. Treatment: ${firstTreatment}. Prevention: ${firstPrevention}.`
 
-    // Auto-speak the result
-    const speechText =
-      lang === "te"
-        ? `మీ పంటకు ${pred.disease_name} ఉంది. విశ్వసనీయత ${pred.confidence} శాతం. తీవ్రత ${pred.severity_rate}గా ఉంది.`
-        : `Your crop has ${pred.disease_name}. Confidence is ${pred.confidence} percent. Severity is ${pred.severity_rate}.`
-
-    setTimeout(() => {
-      speak(speechText, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
-    }, 500)
-  }, [image, lang])
+      setTimeout(() => {
+        speak(speechText, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
+      }, 500)
+    } catch (error) {
+      console.error("❌ Prediction error:", error)
+      const errorMsg = error instanceof Error ? error.message : "Analysis failed. Please try again."
+      setError(errorMsg)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }, [image, lang, fileName])
 
   const speakResult = useCallback(() => {
     if (!result) return
+    const severityInLang = getSeverityInLanguage(result.severity_rate, lang)
+    const firstTreatment = result.treatment[0] || "సలహా చేయుటకు డాక్టర్‌ను సంప్రదించండి"
+    const firstPrevention = result.prevention[0] || "పంట నిర్వహణ చేయుటకు జాగ్రత్త చేయండి"
+    
     const speechText =
       lang === "te"
-        ? `మీ పంటకు ${result.disease_name} ఉంది. విశ్వసనీయత ${result.confidence} శాతం. తీవ్రత ${result.severity_rate}గా ఉంది. నివారణ: ${result.prevention[0]}. చికిత్స: ${result.treatment[0]}.`
-        : `Your crop has ${result.disease_name}. Confidence is ${result.confidence} percent. Severity is ${result.severity_rate}. Prevention: ${result.prevention[0]}. Treatment: ${result.treatment[0]}.`
+        ? `మీ పంటకు ${result.disease_name} ఉంది. విశ్వసనీయత ${result.confidence} శాతం. తీవ్రత ${severityInLang}. చికిత్స: ${firstTreatment}. నవారణ: ${firstPrevention}.`
+        : `Your crop has ${result.disease_name}. Confidence is ${result.confidence} percent. Severity is ${severityInLang}. Treatment: ${firstTreatment}. Prevention: ${firstPrevention}.`
     speak(speechText, lang, () => setIsSpeaking(true), () => setIsSpeaking(false))
   }, [result, lang])
 
@@ -225,6 +302,7 @@ export default function CropDiseasePage() {
     setImage(null)
     setFileName("")
     setResult(null)
+    setError(null)
     stopSpeaking()
     setIsSpeaking(false)
   }, [])
@@ -233,10 +311,6 @@ export default function CropDiseasePage() {
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
       {/* Header */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-          <Leaf className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-primary">{t.cropDiseaseTitle}</span>
-        </div>
         <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 text-balance">
           {t.cropDiseaseTitle}
         </h1>
@@ -311,6 +385,29 @@ export default function CropDiseasePage() {
                 }}
                 className="hidden"
               />
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="rounded-2xl bg-destructive/10 border border-destructive/30 p-5 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="flex items-start gap-3">
+                <div className="h-6 w-6 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-destructive mb-1">
+                    {lang === "te" ? "చిత్రం చెల్లదు" : "Invalid Image"}
+                  </p>
+                  <p className="text-sm text-destructive/90 leading-relaxed">{error}</p>
+                  <button
+                    onClick={() => setError(null)}
+                    className="mt-3 text-xs font-medium text-destructive hover:text-destructive/80 underline transition-colors"
+                  >
+                    {lang === "te" ? "మరిన్నిసారి ప్రయత్నించండి" : "Try Again"}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -424,26 +521,6 @@ export default function CropDiseasePage() {
             </div>
           )}
 
-          {/* Prevention */}
-          <div className="rounded-2xl bg-card/70 backdrop-blur-xl border border-border p-6 shadow-lg">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground text-lg">{t.prevention}</h3>
-            </div>
-            <ul className="space-y-3">
-              {result.prevention.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
           {/* Treatment */}
           <div className="rounded-2xl bg-card/70 backdrop-blur-xl border border-border p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
@@ -456,6 +533,26 @@ export default function CropDiseasePage() {
               {result.treatment.map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed">
                   <span className="flex items-center justify-center h-5 w-5 rounded-full bg-accent/10 text-accent text-[10px] font-bold shrink-0 mt-0.5">
+                    {i + 1}
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Prevention */}
+          <div className="rounded-2xl bg-card/70 backdrop-blur-xl border border-border p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground text-lg">{t.prevention}</h3>
+            </div>
+            <ul className="space-y-3">
+              {result.prevention.map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground leading-relaxed">
+                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold shrink-0 mt-0.5">
                     {i + 1}
                   </span>
                   {item}
